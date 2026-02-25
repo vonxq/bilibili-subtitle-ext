@@ -1,0 +1,13 @@
+.DS_Store
+*.crx
+*.pem
+*.zip
+node_modules/
+.idea/
+*.swp
+*.swo
+store_assets/
+icons/generate_icons.py
+.shared/
+.cursor/
+.codex/

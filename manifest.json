@@ -1,0 +1,65 @@
+{
+  "manifest_version": 3,
+  "name": "Bilibili 字幕学习助手",
+  "version": "2.0.0",
+  "description": "Bilibili AI 字幕学习助手：智能分句、复读机、双语对照，助力语言学习",
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "permissions": [
+    "storage"
+  ],
+  "host_permissions": [
+    "*://*.bilibili.com/*",
+    "*://aisubtitle.hdslb.com/*",
+    "*://api.bilibili.com/*"
+  ],
+  "action": {
+    "default_title": "Bilibili 字幕助手",
+    "default_popup": "src/options/popup.html"
+  },
+  "background": {
+    "service_worker": "src/background/service-worker.js"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "*://*.bilibili.com/video/*",
+        "*://*.bilibili.com/cheese/*"
+      ],
+      "css": [
+        "src/content/styles/panel.css",
+        "src/content/styles/filter.css",
+        "src/content/styles/subtitle.css"
+      ],
+      "js": [
+        "src/utils/constants.js",
+        "src/utils/time.js",
+        "src/utils/dom.js",
+        "src/content/services/player-service.js",
+        "src/content/services/repeater-service.js",
+        "src/content/services/sentence-service.js",
+        "src/content/services/subtitle-service.js",
+        "src/content/services/auto-subtitle-service.js",
+        "src/content/components/SubtitleItem.js",
+        "src/content/components/SubtitleList.js",
+        "src/content/components/ABRepeatBar.js",
+        "src/content/components/Settings.js",
+        "src/content/components/ModeSelector.js",
+        "src/content/components/SpeedControl.js",
+        "src/content/components/Header.js",
+        "src/content/components/Panel.js",
+        "src/content/index.js"
+      ],
+      "run_at": "document_idle"
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": ["src/inject.js"],
+      "matches": ["*://*.bilibili.com/*"]
+    }
+  ]
+}
