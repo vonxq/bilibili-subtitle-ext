@@ -6,23 +6,18 @@ window.BiliSub = window.BiliSub || {};
   if (window.__biliSubContentLoaded) return;
   window.__biliSubContentLoaded = true;
 
-  const { DOM, Panel } = window.BiliSub;
+  var DOM = window.BiliSub.DOM;
+  var Panel = window.BiliSub.Panel;
 
   function init() {
-    injectPageScript();
-    Panel.create();
-
-    chrome.runtime.onMessage.addListener((msg) => {
-      if (msg.action === 'toggle-panel') {
-        Panel.show();
-      }
-    });
-  }
-
-  function injectPageScript() {
-    const scriptUrl = chrome.runtime.getURL('src/inject.js');
+    var scriptUrl = chrome.runtime.getURL('src/inject.js');
     DOM.injectPageScript(scriptUrl);
+    Panel.create();
   }
+
+  chrome.runtime.onMessage.addListener(function (msg) {
+    if (msg.action === 'toggle-panel') Panel.show();
+  });
 
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', init);

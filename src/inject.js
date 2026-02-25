@@ -4,52 +4,90 @@
   if (window.__biliSubInterceptorLoaded) return;
   window.__biliSubInterceptorLoaded = true;
 
-  function dispatchSubtitle(data) {
+  function dispatch(eventName, data) {
     window.dispatchEvent(
-      new CustomEvent('bili-subtitle-data', {
+      new CustomEvent(eventName, {
         detail: JSON.parse(JSON.stringify(data)),
       })
     );
   }
 
-  // Hook fetch
-  const originalFetch = window.fetch;
-  window.fetch = async function (...args) {
-    const url = typeof args[0] === 'string' ? args[0] : args[0]?.url || '';
+  function isSubtitleUrl(url) {
+    return typeof url === 'string' && url.includes('ai_subtitle');
+  }
 
-    if (url.includes('ai_subtitle')) {
-      try {
-        const response = await originalFetch.apply(this, args);
-        const cloned = response.clone();
-        cloned.json().then(dispatchSubtitle).catch(() => {});
+  function isPlayerApiUrl(url) {
+    return typeof url === 'string' && /\/x\/player\/(wbi\/)?v2/.test(url);
+  }
+
+  function handleSubtitleResponse(data) {
+    dispatch('bili-subtitle-data', data);
+  }
+
+  function handlePlayerApiResponse(data) {
+    if (data && data.data && data.data.subtitle && data.data.subtitle.subtitles) {
+      var subtitles = data.data.subtitle.subtitles;
+      var urls = subtitles.map(function (s) {
+        return {
+          lang: s.lan,
+          langDoc: s.lan_doc,
+          url: s.subtitle_url,
+          aiType: s.ai_type,
+          aiStatus: s.ai_status,
+        };
+      });
+      dispatch('bili-subtitle-urls', urls);
+    }
+  }
+
+  // Hook fetch
+  var originalFetch = window.fetch;
+  window.fetch = function () {
+    var args = arguments;
+    var url = typeof args[0] === 'string' ? args[0] : (args[0] && args[0].url) || '';
+
+    if (isSubtitleUrl(url) || isPlayerApiUrl(url)) {
+      return originalFetch.apply(this, args).then(function (response) {
+        var cloned = response.clone();
+        cloned
+          .json()
+          .then(function (data) {
+            if (isSubtitleUrl(url)) handleSubtitleResponse(data);
+            if (isPlayerApiUrl(url)) handlePlayerApiResponse(data);
+          })
+          .catch(function () {});
         return response;
-      } catch (e) {
-        return originalFetch.apply(this, args);
-      }
+      });
     }
 
     return originalFetch.apply(this, args);
   };
 
   // Hook XMLHttpRequest
-  const xhrOpen = XMLHttpRequest.prototype.open;
-  const xhrSend = XMLHttpRequest.prototype.send;
+  var xhrOpen = XMLHttpRequest.prototype.open;
+  var xhrSend = XMLHttpRequest.prototype.send;
 
-  XMLHttpRequest.prototype.open = function (method, url, ...rest) {
+  XMLHttpRequest.prototype.open = function (method, url) {
     this._biliSubUrl = url;
-    return xhrOpen.call(this, method, url, ...rest);
+    return xhrOpen.apply(this, arguments);
   };
 
-  XMLHttpRequest.prototype.send = function (...args) {
-    if (this._biliSubUrl && this._biliSubUrl.includes('ai_subtitle')) {
-      this.addEventListener('load', function () {
-        if (this.status === 200) {
+  XMLHttpRequest.prototype.send = function () {
+    var self = this;
+    var url = self._biliSubUrl;
+
+    if (url && (isSubtitleUrl(url) || isPlayerApiUrl(url))) {
+      self.addEventListener('load', function () {
+        if (self.status === 200) {
           try {
-            dispatchSubtitle(JSON.parse(this.responseText));
+            var data = JSON.parse(self.responseText);
+            if (isSubtitleUrl(url)) handleSubtitleResponse(data);
+            if (isPlayerApiUrl(url)) handlePlayerApiResponse(data);
           } catch (_) {}
         }
       });
     }
-    return xhrSend.apply(this, args);
+
+    return xhrSend.apply(this, arguments);
   };
 })();

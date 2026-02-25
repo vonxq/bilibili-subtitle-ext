@@ -2,31 +2,32 @@
   --bili-sub-primary: #00a1d6;
   --bili-sub-primary-hover: #00b5e5;
   --bili-sub-primary-alpha: rgba(0, 161, 214, 0.15);
-  --bili-sub-bg: rgba(24, 25, 28, 0.92);
-  --bili-sub-bg-solid: #18191c;
+  --bili-sub-bg: rgba(24, 25, 28, 0.94);
   --bili-sub-surface: rgba(255, 255, 255, 0.06);
   --bili-sub-surface-hover: rgba(255, 255, 255, 0.1);
   --bili-sub-border: rgba(255, 255, 255, 0.08);
   --bili-sub-text: #e5e9ef;
-  --bili-sub-text-secondary: rgba(255, 255, 255, 0.5);
+  --bili-sub-text-secondary: rgba(255, 255, 255, 0.55);
   --bili-sub-text-muted: rgba(255, 255, 255, 0.35);
   --bili-sub-highlight-bg: rgba(0, 161, 214, 0.12);
   --bili-sub-highlight-border: #00a1d6;
   --bili-sub-radius: 12px;
   --bili-sub-radius-sm: 8px;
-  --bili-sub-shadow: 0 8px 32px rgba(0, 0, 0, 0.3), 0 2px 8px rgba(0, 0, 0, 0.2);
+  --bili-sub-shadow: 0 8px 32px rgba(0, 0, 0, 0.35), 0 2px 8px rgba(0, 0, 0, 0.2);
   --bili-sub-transition: 0.2s ease;
+  --bili-sub-success: #23c55e;
+  --bili-sub-warn: #f59e0b;
 }
 
 .bili-sub-panel {
   position: fixed;
   top: 80px;
   right: 20px;
-  width: 380px;
-  max-height: 80vh;
+  width: 400px;
+  max-height: 82vh;
   background: var(--bili-sub-bg);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
   border: 1px solid var(--bili-sub-border);
   border-radius: var(--bili-sub-radius);
   box-shadow: var(--bili-sub-shadow);
@@ -40,14 +41,11 @@
   user-select: none;
 }
 
-.bili-sub-panel--collapsed {
-  max-height: none;
-}
-
 .bili-sub-panel--collapsed .bili-sub-panel__body {
   height: 0;
   overflow: hidden;
   opacity: 0;
+  padding: 0;
 }
 
 .bili-sub-panel--hidden {
@@ -78,10 +76,63 @@
 }
 
 .bili-sub-panel__empty-icon {
-  font-size: 36px;
-  opacity: 0.5;
+  font-size: 32px;
+  opacity: 0.4;
 }
 
 .bili-sub-panel__empty-text {
-  line-height: 1.6;
+  line-height: 1.7;
+}
+
+/* Settings overlay */
+.bili-sub-settings {
+  position: absolute;
+  inset: 44px 0 0 0;
+  background: var(--bili-sub-bg);
+  z-index: 10;
+  padding: 20px;
+  display: none;
+  flex-direction: column;
+  gap: 18px;
+  overflow-y: auto;
+}
+
+.bili-sub-settings--open {
+  display: flex;
+}
+
+.bili-sub-settings__group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.bili-sub-settings__label {
+  font-size: 11px;
+  color: var(--bili-sub-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  font-weight: 600;
+}
+
+.bili-sub-settings__select {
+  background: var(--bili-sub-surface);
+  border: 1px solid var(--bili-sub-border);
+  border-radius: var(--bili-sub-radius-sm);
+  color: var(--bili-sub-text);
+  padding: 8px 12px;
+  font-size: 13px;
+  outline: none;
+  cursor: pointer;
+  transition: border-color var(--bili-sub-transition);
+  -webkit-appearance: none;
+}
+
+.bili-sub-settings__select:focus {
+  border-color: var(--bili-sub-primary);
+}
+
+.bili-sub-settings__select option {
+  background: #1e1f22;
+  color: var(--bili-sub-text);
 }

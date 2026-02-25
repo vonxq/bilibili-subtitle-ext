@@ -1,21 +1,24 @@
 window.BiliSub = window.BiliSub || {};
 
 window.BiliSub.SubtitleList = (function () {
-  const { DOM, Constants, SubtitleService, SubtitleItem, PlayerService } = window.BiliSub;
+  var DOM = window.BiliSub.DOM;
+  var Constants = window.BiliSub.Constants;
+  var SubtitleService = window.BiliSub.SubtitleService;
+  var SubtitleItem = window.BiliSub.SubtitleItem;
 
-  let _container = null;
-  let _selectedLangs = [];
-  let _isManualScrolling = false;
-  let _scrollTimeout = null;
-  let _lastActiveIndex = -1;
+  var _container = null;
+  var _displayMode = Constants.DEFAULTS.DISPLAY_MODE;
+  var _isManualScrolling = false;
+  var _scrollTimeout = null;
+  var _lastActiveIndex = -1;
 
   function create() {
     _container = DOM.create('div', 'bili-sub-list');
 
-    _container.addEventListener('scroll', () => {
+    _container.addEventListener('scroll', function () {
       _isManualScrolling = true;
       clearTimeout(_scrollTimeout);
-      _scrollTimeout = setTimeout(() => {
+      _scrollTimeout = setTimeout(function () {
         _isManualScrolling = false;
       }, Constants.AUTO_SCROLL_DELAY);
     });
@@ -23,64 +26,62 @@ window.BiliSub.SubtitleList = (function () {
     return _container;
   }
 
-  function render(selectedLangs) {
+  function render(mode) {
     if (!_container) return;
-    _selectedLangs = selectedLangs || _selectedLangs;
+    if (mode) _displayMode = mode;
 
-    const timeline = SubtitleService.getFilteredTimeline(_selectedLangs);
+    var timeline = SubtitleService.getTimeline();
     _container.innerHTML = '';
     _lastActiveIndex = -1;
 
-    timeline.forEach((entry, index) => {
-      const item = SubtitleItem.create(entry, _selectedLangs, index);
+    timeline.forEach(function (sentence, index) {
+      var item = SubtitleItem.create(sentence, index, _displayMode);
       _container.appendChild(item);
     });
+  }
+
+  function setDisplayMode(mode) {
+    _displayMode = mode;
+    render();
   }
 
   function highlightCurrent(currentTime) {
     if (!_container) return;
 
-    const items = _container.querySelectorAll('.bili-sub-item');
-    let activeIndex = -1;
+    var items = _container.querySelectorAll('.bili-sub-item');
+    var activeIndex = -1;
 
-    items.forEach((item, index) => {
-      const from = parseFloat(item.dataset.from);
-      const to = parseFloat(item.dataset.to);
-      const isActive = currentTime >= from && currentTime < to;
-
+    items.forEach(function (item, index) {
+      var from = parseFloat(item.dataset.from);
+      var to = parseFloat(item.dataset.to);
+      var isActive = currentTime >= from && currentTime < to;
       item.classList.toggle('bili-sub-item--active', isActive);
       if (isActive) activeIndex = index;
     });
 
     if (activeIndex >= 0 && activeIndex !== _lastActiveIndex && !_isManualScrolling) {
       _lastActiveIndex = activeIndex;
-      const activeItem = items[activeIndex];
-      if (activeItem) {
-        scrollToItem(activeItem);
-      }
+      var activeItem = items[activeIndex];
+      if (activeItem) _scrollToItem(activeItem);
     }
   }
 
-  function scrollToItem(item) {
-    if (!_container || !item) return;
-
-    const containerRect = _container.getBoundingClientRect();
-    const itemRect = item.getBoundingClientRect();
-    const relativeTop = itemRect.top - containerRect.top;
-    const targetScroll =
-      _container.scrollTop + relativeTop - containerRect.height / 2 + itemRect.height / 2;
-
-    _container.scrollTo({ top: targetScroll, behavior: 'smooth' });
+  function _scrollToItem(item) {
+    if (!_container) return;
+    var cRect = _container.getBoundingClientRect();
+    var iRect = item.getBoundingClientRect();
+    var relTop = iRect.top - cRect.top;
+    var target = _container.scrollTop + relTop - cRect.height / 2 + iRect.height / 2;
+    _container.scrollTo({ top: target, behavior: 'smooth' });
   }
 
-  function setSelectedLangs(langs) {
-    _selectedLangs = langs;
-    render(_selectedLangs);
-  }
+  function getElement() { return _container; }
 
-  function getElement() {
-    return _container;
-  }
-
-  return { create, render, highlightCurrent, setSelectedLangs, getElement };
+  return {
+    create: create,
+    render: render,
+    setDisplayMode: setDisplayMode,
+    highlightCurrent: highlightCurrent,
+    getElement: getElement,
+  };
 })();

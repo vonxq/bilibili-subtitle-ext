@@ -1,3 +1,4 @@
+/* Header */
 .bili-sub-header {
   display: flex;
   align-items: center;
@@ -8,9 +9,7 @@
   min-height: 44px;
 }
 
-.bili-sub-header:active {
-  cursor: grabbing;
-}
+.bili-sub-header:active { cursor: grabbing; }
 
 .bili-sub-header__title {
   display: flex;
@@ -19,28 +18,12 @@
   font-size: 14px;
   font-weight: 600;
   color: var(--bili-sub-text);
-  letter-spacing: 0.3px;
 }
 
-.bili-sub-header__icon {
-  width: 20px;
-  height: 20px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
+.bili-sub-header__icon { display: flex; align-items: center; }
+.bili-sub-header__icon svg { width: 18px; height: 18px; fill: var(--bili-sub-primary); }
 
-.bili-sub-header__icon svg {
-  width: 18px;
-  height: 18px;
-  fill: var(--bili-sub-primary);
-}
-
-.bili-sub-header__actions {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-}
+.bili-sub-header__actions { display: flex; align-items: center; gap: 2px; }
 
 .bili-sub-header__btn {
   display: flex;
@@ -63,8 +46,8 @@
 }
 
 .bili-sub-header__btn svg {
-  width: 16px;
-  height: 16px;
+  width: 15px;
+  height: 15px;
   stroke: currentColor;
   fill: none;
   stroke-width: 2;
@@ -85,94 +68,168 @@
   flex: 1;
   overflow-y: auto;
   overscroll-behavior: contain;
-  scroll-behavior: smooth;
-  min-height: 120px;
+  min-height: 100px;
   max-height: 60vh;
 }
 
-.bili-sub-list::-webkit-scrollbar {
-  width: 4px;
-}
-
-.bili-sub-list::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.bili-sub-list::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.12);
-  border-radius: 2px;
-}
-
-.bili-sub-list::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.2);
-}
+.bili-sub-list::-webkit-scrollbar { width: 4px; }
+.bili-sub-list::-webkit-scrollbar-track { background: transparent; }
+.bili-sub-list::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 2px; }
+.bili-sub-list::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.2); }
 
 /* Subtitle item */
 .bili-sub-item {
-  display: flex;
-  align-items: flex-start;
-  gap: 10px;
-  padding: 8px 14px;
-  cursor: pointer;
+  padding: 10px 14px;
+  cursor: default;
   transition: background var(--bili-sub-transition);
   border-left: 2px solid transparent;
-  position: relative;
+  border-bottom: 1px solid rgba(255,255,255,0.03);
 }
 
-.bili-sub-item:hover {
-  background: var(--bili-sub-surface-hover);
-}
+.bili-sub-item:hover { background: var(--bili-sub-surface); }
 
 .bili-sub-item--active {
   background: var(--bili-sub-highlight-bg);
   border-left-color: var(--bili-sub-highlight-border);
 }
 
-.bili-sub-item--active:hover {
-  background: rgba(0, 161, 214, 0.18);
+.bili-sub-item--active:hover { background: rgba(0, 161, 214, 0.18); }
+
+/* Item top row: controls */
+.bili-sub-item__controls {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 6px;
+}
+
+.bili-sub-item__play-btn,
+.bili-sub-item__loop-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: none;
+  cursor: pointer;
+  transition: all var(--bili-sub-transition);
+  padding: 0;
+  flex-shrink: 0;
+}
+
+.bili-sub-item__play-btn {
+  background: var(--bili-sub-primary);
+  color: #fff;
+}
+
+.bili-sub-item__play-btn:hover {
+  background: var(--bili-sub-primary-hover);
+  transform: scale(1.1);
+}
+
+.bili-sub-item__play-btn svg {
+  width: 12px;
+  height: 12px;
+  fill: currentColor;
+  stroke: none;
+}
+
+.bili-sub-item__loop-btn {
+  background: var(--bili-sub-surface);
+  color: var(--bili-sub-text-secondary);
+  font-size: 10px;
+  width: auto;
+  padding: 0 6px;
+  border-radius: 12px;
+  gap: 3px;
+  height: 22px;
+}
+
+.bili-sub-item__loop-btn:hover {
+  background: var(--bili-sub-surface-hover);
+  color: var(--bili-sub-text);
+}
+
+.bili-sub-item__loop-btn--active {
+  background: var(--bili-sub-primary-alpha);
+  color: var(--bili-sub-primary);
+}
+
+.bili-sub-item__loop-btn svg {
+  width: 12px;
+  height: 12px;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 2;
+}
+
+.bili-sub-item__loop-count {
+  font-family: 'SF Mono', Menlo, monospace;
+  font-size: 10px;
 }
 
 .bili-sub-item__time {
-  flex-shrink: 0;
   font-size: 11px;
-  font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', Menlo, monospace;
-  color: var(--bili-sub-primary);
-  padding-top: 2px;
-  min-width: 38px;
+  font-family: 'SF Mono', 'Fira Code', Menlo, monospace;
+  color: var(--bili-sub-text-muted);
   letter-spacing: 0.3px;
+  margin-left: auto;
 }
 
-.bili-sub-item__texts {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-  min-width: 0;
-}
-
-.bili-sub-item__text {
-  font-size: 13px;
-  line-height: 1.55;
+/* Text content */
+.bili-sub-item__target {
+  font-size: 14px;
+  line-height: 1.6;
   color: var(--bili-sub-text);
   word-break: break-word;
 }
 
-.bili-sub-item__text--secondary {
+.bili-sub-item__native {
   font-size: 12px;
+  line-height: 1.55;
   color: var(--bili-sub-text-secondary);
-  line-height: 1.5;
+  word-break: break-word;
+  margin-top: 4px;
 }
 
-.bili-sub-item__lang-tag {
-  display: inline-block;
-  font-size: 9px;
-  color: var(--bili-sub-text-muted);
-  background: var(--bili-sub-surface);
-  padding: 0 4px;
-  border-radius: 3px;
-  margin-right: 4px;
-  vertical-align: middle;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  font-weight: 500;
+/* Expandable translation */
+.bili-sub-item__reveal {
+  display: none;
+}
+
+.bili-sub-item__reveal-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 6px;
+  padding: 3px 10px;
+  font-size: 11px;
+  color: var(--bili-sub-primary);
+  background: var(--bili-sub-primary-alpha);
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all var(--bili-sub-transition);
+}
+
+.bili-sub-item__reveal-btn:hover {
+  background: rgba(0, 161, 214, 0.25);
+}
+
+.bili-sub-item__reveal-btn svg {
+  width: 10px;
+  height: 10px;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 2;
+  transition: transform 0.2s;
+}
+
+.bili-sub-item--expanded .bili-sub-item__reveal {
+  display: block;
+}
+
+.bili-sub-item--expanded .bili-sub-item__reveal-btn svg {
+  transform: rotate(180deg);
 }

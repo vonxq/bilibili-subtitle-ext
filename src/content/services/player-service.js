@@ -1,10 +1,10 @@
 window.BiliSub = window.BiliSub || {};
 
 window.BiliSub.PlayerService = (function () {
-  const { Constants } = window.BiliSub;
-  let _video = null;
-  let _highlightTimer = null;
-  let _onTimeUpdateCallback = null;
+  var Constants = window.BiliSub.Constants;
+  var _video = null;
+  var _highlightTimer = null;
+  var _timeCallback = null;
 
   function getVideo() {
     if (_video && document.contains(_video)) return _video;
@@ -13,30 +13,20 @@ window.BiliSub.PlayerService = (function () {
   }
 
   function getCurrentTime() {
-    const video = getVideo();
+    var video = getVideo();
     return video ? video.currentTime : 0;
   }
 
   function seekTo(time) {
-    const video = getVideo();
-    if (video) {
-      video.currentTime = time;
-      if (video.paused) video.play();
-    }
-  }
-
-  function isPlaying() {
-    const video = getVideo();
-    return video ? !video.paused : false;
+    var video = getVideo();
+    if (video) video.currentTime = time;
   }
 
   function startHighlightTracking(callback) {
-    _onTimeUpdateCallback = callback;
+    _timeCallback = callback;
     stopHighlightTracking();
-    _highlightTimer = setInterval(() => {
-      if (_onTimeUpdateCallback) {
-        _onTimeUpdateCallback(getCurrentTime());
-      }
+    _highlightTimer = setInterval(function () {
+      if (_timeCallback) _timeCallback(getCurrentTime());
     }, Constants.HIGHLIGHT_UPDATE_INTERVAL);
   }
 
@@ -47,17 +37,15 @@ window.BiliSub.PlayerService = (function () {
     }
   }
 
-  // Listen for seek requests from UI
-  window.addEventListener(Constants.EVENTS.SEEK_TO, (e) => {
+  window.addEventListener(Constants.EVENTS.SEEK_TO, function (e) {
     seekTo(e.detail);
   });
 
   return {
-    getVideo,
-    getCurrentTime,
-    seekTo,
-    isPlaying,
-    startHighlightTracking,
-    stopHighlightTracking,
+    getVideo: getVideo,
+    getCurrentTime: getCurrentTime,
+    seekTo: seekTo,
+    startHighlightTracking: startHighlightTracking,
+    stopHighlightTracking: stopHighlightTracking,
   };
 })();
