@@ -16,6 +16,9 @@
     "*://aisubtitle.hdslb.com/*",
     "*://api.bilibili.com/*"
   ],
+  "action": {
+    "default_title": "Bilibili 字幕助手"
+  },
   "background": {
     "service_worker": "src/background/service-worker.js"
   },
