@@ -1,0 +1,32 @@
+---
+description: Git 提交规范
+alwaysApply: true
+---
+
+# Git 提交规范
+
+## 提交信息格式
+```
+<type>: <description>
+```
+
+## Type 类型
+- `feat`: 新增功能
+- `fix`: 修复问题
+- `refactor`: 重构代码
+- `style`: 样式调整
+- `docs`: 文档更新
+- `chore`: 杂项更新
+
+## 规则
+- 完成功能修改后应提交代码
+- 提交前确保插件无 JS 语法错误（可在 chrome://extensions 验证）
+- 提交信息要清晰描述本次修改内容
+- 不提交调试代码（console.log 等）
+
+## 示例
+```bash
+git add -A && git commit -m "feat: 实现字幕拦截与多语言合并"
+git add -A && git commit -m "fix: 修复字幕面板拖拽偏移问题"
+git add -A && git commit -m "style: 优化语言筛选器 hover 效果"
+```

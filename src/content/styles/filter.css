@@ -1,0 +1,52 @@
+.bili-sub-filter {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border-bottom: 1px solid var(--bili-sub-border);
+  flex-wrap: wrap;
+  min-height: 40px;
+}
+
+.bili-sub-filter__label {
+  font-size: 11px;
+  color: var(--bili-sub-text-muted);
+  margin-right: 2px;
+  white-space: nowrap;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+.bili-sub-filter__chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all var(--bili-sub-transition);
+  border: 1px solid var(--bili-sub-border);
+  color: var(--bili-sub-text-secondary);
+  background: transparent;
+  white-space: nowrap;
+  line-height: 1.5;
+}
+
+.bili-sub-filter__chip:hover {
+  border-color: var(--bili-sub-primary);
+  color: var(--bili-sub-primary);
+  background: var(--bili-sub-primary-alpha);
+}
+
+.bili-sub-filter__chip--active {
+  background: var(--bili-sub-primary);
+  border-color: var(--bili-sub-primary);
+  color: #fff;
+  font-weight: 500;
+}
+
+.bili-sub-filter__chip--active:hover {
+  background: var(--bili-sub-primary-hover);
+  border-color: var(--bili-sub-primary-hover);
+  color: #fff;
+}

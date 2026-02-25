@@ -1,0 +1,87 @@
+:root {
+  --bili-sub-primary: #00a1d6;
+  --bili-sub-primary-hover: #00b5e5;
+  --bili-sub-primary-alpha: rgba(0, 161, 214, 0.15);
+  --bili-sub-bg: rgba(24, 25, 28, 0.92);
+  --bili-sub-bg-solid: #18191c;
+  --bili-sub-surface: rgba(255, 255, 255, 0.06);
+  --bili-sub-surface-hover: rgba(255, 255, 255, 0.1);
+  --bili-sub-border: rgba(255, 255, 255, 0.08);
+  --bili-sub-text: #e5e9ef;
+  --bili-sub-text-secondary: rgba(255, 255, 255, 0.5);
+  --bili-sub-text-muted: rgba(255, 255, 255, 0.35);
+  --bili-sub-highlight-bg: rgba(0, 161, 214, 0.12);
+  --bili-sub-highlight-border: #00a1d6;
+  --bili-sub-radius: 12px;
+  --bili-sub-radius-sm: 8px;
+  --bili-sub-shadow: 0 8px 32px rgba(0, 0, 0, 0.3), 0 2px 8px rgba(0, 0, 0, 0.2);
+  --bili-sub-transition: 0.2s ease;
+}
+
+.bili-sub-panel {
+  position: fixed;
+  top: 80px;
+  right: 20px;
+  width: 380px;
+  max-height: 80vh;
+  background: var(--bili-sub-bg);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--bili-sub-border);
+  border-radius: var(--bili-sub-radius);
+  box-shadow: var(--bili-sub-shadow);
+  z-index: 99999;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'PingFang SC',
+    'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+  transition: opacity var(--bili-sub-transition), transform var(--bili-sub-transition);
+  user-select: none;
+}
+
+.bili-sub-panel--collapsed {
+  max-height: none;
+}
+
+.bili-sub-panel--collapsed .bili-sub-panel__body {
+  height: 0;
+  overflow: hidden;
+  opacity: 0;
+}
+
+.bili-sub-panel--hidden {
+  opacity: 0;
+  pointer-events: none;
+  transform: translateX(20px);
+}
+
+.bili-sub-panel__body {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  transition: height 0.3s ease, opacity 0.3s ease;
+  opacity: 1;
+}
+
+.bili-sub-panel__empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 24px;
+  color: var(--bili-sub-text-muted);
+  font-size: 13px;
+  text-align: center;
+  gap: 12px;
+}
+
+.bili-sub-panel__empty-icon {
+  font-size: 36px;
+  opacity: 0.5;
+}
+
+.bili-sub-panel__empty-text {
+  line-height: 1.6;
+}

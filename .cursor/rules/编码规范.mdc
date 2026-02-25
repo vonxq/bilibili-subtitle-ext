@@ -1,0 +1,47 @@
+---
+description: Chrome 插件编码规范，涵盖文件组织、命名、模块化、样式等
+alwaysApply: true
+---
+
+# Bilibili 字幕助手 编码规范
+
+## 文件规范
+- 单文件不超过 **300 行**，超过需拆分
+- 一个文件只负责一个模块/组件
+- 组件文件：`PascalCase.js`（如 `Panel.js`、`SubtitleList.js`）
+- 服务文件：`kebab-case.js`（如 `subtitle-service.js`）
+- 工具文件：`camelCase.js`（如 `time.js`、`dom.js`）
+
+## 单一职责原则
+- 每个 JS 文件只暴露一个功能模块
+- 组件只负责 UI 渲染和交互
+- 服务只负责数据获取和处理
+- 工具只负责通用函数
+
+## 模块化通信
+- 通过全局命名空间 `window.BiliSub` 管理模块注册
+- 模块间通过 CustomEvent 解耦通信
+- content script 与页面脚本通过 `window.dispatchEvent` 通信
+
+```javascript
+// ✅ 正确：模块注册到命名空间
+window.BiliSub = window.BiliSub || {};
+window.BiliSub.SubtitleService = { /* ... */ };
+
+// ✅ 正确：事件通信
+window.dispatchEvent(new CustomEvent('bili-subtitle-data', { detail: data }));
+
+// ❌ 错误：直接跨文件引用未注册的全局变量
+const data = someGlobalVar;
+```
+
+## 禁止硬编码
+- 颜色、间距、字号等视觉常量统一放在 CSS 自定义属性
+- 语言名称映射、事件名称等放在 `constants.js`
+- 不允许在组件中写死 URL 或选择器字符串
+
+## CSS 规范
+- 使用 BEM 命名：`.bili-sub__header`、`.bili-sub__item--active`
+- 主题色使用 CSS 自定义属性 `var(--bili-sub-primary)`
+- 所有可点击元素必须有 `cursor: pointer`
+- hover 状态使用 `transition: all 0.2s ease`

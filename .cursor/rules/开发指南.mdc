@@ -1,0 +1,44 @@
+---
+description: 项目结构与开发流程指南
+alwaysApply: true
+---
+
+# 开发指南
+
+## 技术栈
+- Chrome Extension Manifest V3
+- 纯 JavaScript（无框架、无构建工具）
+- CSS 自定义属性 + BEM 命名
+
+## 项目结构
+```
+src/
+├── inject.js                  # 页面上下文注入（拦截 fetch/XHR）
+├── content/
+│   ├── index.js               # Content script 入口
+│   ├── components/            # UI 组件（Panel、Header、LanguageFilter 等）
+│   ├── services/              # 数据服务（subtitle-service、player-service）
+│   └── styles/                # CSS 样式文件
+├── background/
+│   └── service-worker.js      # 后台 service worker
+└── utils/                     # 通用工具函数
+```
+
+## 模块加载顺序
+manifest.json 中 content_scripts.js 按顺序加载：
+1. `utils/*` (基础工具)
+2. `services/*` (数据服务)
+3. `components/*` (UI 组件)
+4. `content/index.js` (入口，最后加载，串联所有模块)
+
+## 新增模块流程
+1. 在对应目录创建 JS 文件
+2. 通过 `window.BiliSub.ModuleName = { ... }` 注册到命名空间
+3. 在 `manifest.json` 的 content_scripts.js 数组中添加文件路径
+4. 在 `index.js` 中调用初始化
+
+## 调试方法
+1. 打开 `chrome://extensions`，启用开发者模式
+2. 点击「加载已解压的扩展程序」，选择项目根目录
+3. 打开 Bilibili 视频页面，按 F12 查看 Console
+4. 修改代码后点击扩展的刷新按钮，刷新 Bilibili 页面
