@@ -10,6 +10,7 @@ window.BiliSub.RepeaterService = (function () {
     loopTotal: 1,
     loopCount: 0,
     originalSpeed: 1,
+    mode: 'sentence',
   };
 
   var _video = null;
@@ -20,17 +21,25 @@ window.BiliSub.RepeaterService = (function () {
     _listeners.push(cb);
   }
 
-  function notify() {
-    var snapshot = {
+  function _snapshot() {
+    return {
       active: _state.active,
       from: _state.sentenceFrom,
       to: _state.sentenceTo,
       loopTotal: _state.loopTotal,
       loopCount: _state.loopCount,
+      mode: _state.mode,
     };
+  }
+
+  function notify() {
+    var snap = _snapshot();
     _listeners.forEach(function (cb) {
-      try { cb(snapshot); } catch (_) {}
+      try { cb(snap); } catch (_) {}
     });
+    window.dispatchEvent(
+      new CustomEvent(Constants.EVENTS.REPEATER_STATE, { detail: snap })
+    );
   }
 
   function getVideo() {
@@ -39,17 +48,18 @@ window.BiliSub.RepeaterService = (function () {
     return _video;
   }
 
-  function play(from, to, loopTotal) {
+  function play(from, to, loopTotal, mode) {
     var video = getVideo();
     if (!video) return;
 
-    stop();
+    stop(true);
 
     _state.active = true;
     _state.sentenceFrom = from;
     _state.sentenceTo = to;
     _state.loopTotal = loopTotal || 1;
     _state.loopCount = 0;
+    _state.mode = mode || 'sentence';
 
     video.currentTime = from;
     video.play();
@@ -67,36 +77,46 @@ window.BiliSub.RepeaterService = (function () {
 
     if (video.currentTime >= _state.sentenceTo) {
       _state.loopCount++;
-      notify();
+
+      video.pause();
+      video.currentTime = _state.sentenceFrom;
 
       var reachedLimit =
         _state.loopTotal !== Infinity && _state.loopCount >= _state.loopTotal;
 
       if (reachedLimit) {
-        video.pause();
         stop();
         return;
       }
 
-      video.pause();
+      notify();
+
       setTimeout(function () {
         if (!_state.active) return;
         var v = getVideo();
         if (v) {
-          v.currentTime = _state.sentenceFrom;
           v.play();
         }
       }, Constants.REPEATER.PAUSE_BETWEEN_LOOPS);
     }
   }
 
-  function stop() {
+  function stop(silent) {
+    var wasActive = _state.active;
     _state.active = false;
     _state.loopCount = 0;
+    _state.mode = 'sentence';
     if (_checkTimer) {
       clearInterval(_checkTimer);
       _checkTimer = null;
     }
+    if (!silent && wasActive) notify();
+  }
+
+  function setLoopTotal(total) {
+    if (!_state.active) return;
+    _state.loopTotal = total;
+    _state.loopCount = 0;
     notify();
   }
 
@@ -105,13 +125,7 @@ window.BiliSub.RepeaterService = (function () {
   }
 
   function getState() {
-    return {
-      active: _state.active,
-      from: _state.sentenceFrom,
-      to: _state.sentenceTo,
-      loopTotal: _state.loopTotal,
-      loopCount: _state.loopCount,
-    };
+    return _snapshot();
   }
 
   function setSpeed(rate) {
@@ -134,5 +148,6 @@ window.BiliSub.RepeaterService = (function () {
     setSpeed: setSpeed,
     getSpeed: getSpeed,
     onStateChange: onStateChange,
+    setLoopTotal: setLoopTotal,
   };
 })();

@@ -42,30 +42,44 @@ window.BiliSub.SubtitleItem = (function () {
   }
 
   function _createLoopBtn(sentence) {
-    var loopIndex = 0;
     var options = Constants.REPEATER.LOOP_OPTIONS;
 
     var btn = DOM.create('button', 'bili-sub-item__loop-btn');
-    btn.innerHTML = LOOP_SVG + '<span class="bili-sub-item__loop-count">1x</span>';
+    btn.innerHTML = LOOP_SVG + '<span class="bili-sub-item__loop-count"></span>';
     btn.title = '循环播放';
+    btn._loopIndex = 0;
 
     btn.addEventListener('click', function (e) {
       e.stopPropagation();
-      loopIndex = (loopIndex + 1) % (options.length + 1);
 
-      if (loopIndex === 0) {
+      document.querySelectorAll('.bili-sub-item__loop-btn--active').forEach(function (b) {
+        if (b !== btn) {
+          b.classList.remove('bili-sub-item__loop-btn--active');
+          var countEl = b.querySelector('.bili-sub-item__loop-count');
+          if (countEl) countEl.textContent = '';
+          b._loopIndex = 0;
+        }
+      });
+
+      btn._loopIndex = (btn._loopIndex + 1) % (options.length + 1);
+
+      if (btn._loopIndex === 0) {
         RepeaterService.stop();
         btn.classList.remove('bili-sub-item__loop-btn--active');
-        btn.querySelector('.bili-sub-item__loop-count').textContent = '1x';
+        btn.querySelector('.bili-sub-item__loop-count').textContent = '';
         return;
       }
 
-      var count = options[loopIndex - 1];
+      var count = options[btn._loopIndex - 1];
       btn.classList.add('bili-sub-item__loop-btn--active');
       btn.querySelector('.bili-sub-item__loop-count').textContent =
         count === Infinity ? '∞' : count + 'x';
 
-      RepeaterService.play(sentence.from, sentence.to, count);
+      if (btn._loopIndex === 1) {
+        RepeaterService.play(sentence.from, sentence.to, count);
+      } else {
+        RepeaterService.setLoopTotal(count);
+      }
     });
 
     return btn;

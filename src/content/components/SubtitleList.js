@@ -23,6 +23,17 @@ window.BiliSub.SubtitleList = (function () {
       }, Constants.AUTO_SCROLL_DELAY);
     });
 
+    window.addEventListener(Constants.EVENTS.REPEATER_STATE, function (e) {
+      if (!e.detail.active && _container) {
+        _container.querySelectorAll('.bili-sub-item__loop-btn--active').forEach(function (b) {
+          b.classList.remove('bili-sub-item__loop-btn--active');
+          var countEl = b.querySelector('.bili-sub-item__loop-count');
+          if (countEl) countEl.textContent = '';
+          b._loopIndex = 0;
+        });
+      }
+    });
+
     return _container;
   }
 

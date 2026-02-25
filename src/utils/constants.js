@@ -60,7 +60,7 @@ window.BiliSub.Constants = {
   },
 
   REPEATER: {
-    LOOP_OPTIONS: [1, 3, 5, Infinity],
+    LOOP_OPTIONS: [Infinity, 5],
     PAUSE_BETWEEN_LOOPS: 500,
   },
 

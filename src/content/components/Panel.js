@@ -7,6 +7,7 @@ window.BiliSub.Panel = (function () {
   var Settings = window.BiliSub.Settings;
   var ModeSelector = window.BiliSub.ModeSelector;
   var SubtitleList = window.BiliSub.SubtitleList;
+  var ABRepeatBar = window.BiliSub.ABRepeatBar;
   var SpeedControl = window.BiliSub.SpeedControl;
   var SubtitleService = window.BiliSub.SubtitleService;
   var PlayerService = window.BiliSub.PlayerService;
@@ -41,6 +42,8 @@ window.BiliSub.Panel = (function () {
       SubtitleList.setDisplayMode(mode);
     });
 
+    var abBarEl = ABRepeatBar.create();
+
     var listEl = SubtitleList.create();
 
     _emptyEl = DOM.create('div', 'bili-sub-panel__empty');
@@ -50,7 +53,7 @@ window.BiliSub.Panel = (function () {
 
     var speedEl = SpeedControl.create();
 
-    DOM.appendChildren(body, modeEl, listEl, _emptyEl, speedEl);
+    DOM.appendChildren(body, modeEl, abBarEl, listEl, _emptyEl, speedEl);
     DOM.appendChildren(_panel, header, settingsEl, body);
 
     _loadState();

@@ -43,6 +43,7 @@
         "src/content/services/subtitle-service.js",
         "src/content/components/SubtitleItem.js",
         "src/content/components/SubtitleList.js",
+        "src/content/components/ABRepeatBar.js",
         "src/content/components/Settings.js",
         "src/content/components/ModeSelector.js",
         "src/content/components/SpeedControl.js",
