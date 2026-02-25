@@ -8,22 +8,40 @@ window.BiliSub.Header = (function () {
   var COLLAPSE_ICON = '<svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>';
   var CLOSE_ICON = '<svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>';
 
-  function create(onSettings, onCollapse, onClose) {
+  var _homeTab = null;
+  var _settingsTab = null;
+
+  function create(onHome, onSettings, onCollapse, onClose) {
     var header = DOM.create('div', 'bili-sub-header');
 
     var titleWrap = DOM.create('div', 'bili-sub-header__title');
     var icon = DOM.create('span', 'bili-sub-header__icon', { innerHTML: SUBTITLE_ICON });
     titleWrap.appendChild(icon);
-    titleWrap.appendChild(document.createTextNode('字幕助手'));
 
-    var actions = DOM.create('div', 'bili-sub-header__actions');
+    var tabs = DOM.create('div', 'bili-sub-header__tabs');
+    _homeTab = DOM.create('button', 'bili-sub-header__tab bili-sub-header__tab--active', {
+      textContent: '主页',
+    });
+    _settingsTab = DOM.create('button', 'bili-sub-header__tab', {
+      textContent: '设置',
+    });
 
-    var settingsBtn = DOM.create('button', 'bili-sub-header__btn', { innerHTML: SETTINGS_ICON });
-    settingsBtn.title = '设置';
-    settingsBtn.addEventListener('click', function (e) {
+    _homeTab.addEventListener('click', function (e) {
       e.stopPropagation();
+      _setActive('home');
+      if (onHome) onHome();
+    });
+
+    _settingsTab.addEventListener('click', function (e) {
+      e.stopPropagation();
+      _setActive('settings');
       if (onSettings) onSettings();
     });
+
+    DOM.appendChildren(tabs, _homeTab, _settingsTab);
+    titleWrap.appendChild(tabs);
+
+    var actions = DOM.create('div', 'bili-sub-header__actions');
 
     var collapseBtn = DOM.create('button', 'bili-sub-header__btn bili-sub-header__btn--collapse', {
       innerHTML: COLLAPSE_ICON,
@@ -41,10 +59,21 @@ window.BiliSub.Header = (function () {
       if (onClose) onClose();
     });
 
-    DOM.appendChildren(actions, settingsBtn, collapseBtn, closeBtn);
+    DOM.appendChildren(actions, collapseBtn, closeBtn);
     DOM.appendChildren(header, titleWrap, actions);
     return header;
   }
 
-  return { create: create };
+  function _setActive(tab) {
+    if (!_homeTab || !_settingsTab) return;
+    var isHome = tab === 'home';
+    _homeTab.classList.toggle('bili-sub-header__tab--active', isHome);
+    _settingsTab.classList.toggle('bili-sub-header__tab--active', !isHome);
+  }
+
+  function setActive(tab) {
+    _setActive(tab);
+  }
+
+  return { create: create, setActive: setActive };
 })();

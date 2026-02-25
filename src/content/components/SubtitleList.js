@@ -11,11 +11,14 @@ window.BiliSub.SubtitleList = (function () {
   var _isManualScrolling = false;
   var _scrollTimeout = null;
   var _lastActiveIndex = -1;
+  var _isAutoScrolling = false;
 
   function create() {
     _container = DOM.create('div', 'bili-sub-list');
 
     _container.addEventListener('scroll', function () {
+      // 自动滚动产生的 scroll 事件不计入「手动滚动」
+      if (_isAutoScrolling) return;
       _isManualScrolling = true;
       clearTimeout(_scrollTimeout);
       _scrollTimeout = setTimeout(function () {
@@ -56,7 +59,7 @@ window.BiliSub.SubtitleList = (function () {
     render();
   }
 
-  function highlightCurrent(currentTime) {
+  function highlightCurrent(currentTime, forceScroll) {
     if (!_container) return;
 
     var items = _container.querySelectorAll('.bili-sub-item');
@@ -70,7 +73,7 @@ window.BiliSub.SubtitleList = (function () {
       if (isActive) activeIndex = index;
     });
 
-    if (activeIndex >= 0 && activeIndex !== _lastActiveIndex && !_isManualScrolling) {
+    if (activeIndex >= 0 && (forceScroll || activeIndex !== _lastActiveIndex) && !_isManualScrolling) {
       _lastActiveIndex = activeIndex;
       var activeItem = items[activeIndex];
       if (activeItem) _scrollToItem(activeItem);
@@ -83,7 +86,13 @@ window.BiliSub.SubtitleList = (function () {
     var iRect = item.getBoundingClientRect();
     var relTop = iRect.top - cRect.top;
     var target = _container.scrollTop + relTop - cRect.height / 2 + iRect.height / 2;
+
+    _isAutoScrolling = true;
     _container.scrollTo({ top: target, behavior: 'smooth' });
+    // 短暂窗口内的 scroll 事件视为自动滚动，不会把 _isManualScrolling 置为 true
+    setTimeout(function () {
+      _isAutoScrolling = false;
+    }, 350);
   }
 
   function getElement() { return _container; }

@@ -168,6 +168,8 @@ window.BiliSub.SubtitleItem = (function () {
     }
   }
 
+  var _ttsActiveBtn = null;
+
   function _createTtsBtnFor(text, langCode, label) {
     var btn = DOM.create('button', 'bili-sub-item__tts-btn');
     btn.innerHTML =
@@ -179,13 +181,18 @@ window.BiliSub.SubtitleItem = (function () {
 
     btn.addEventListener('click', function (e) {
       e.stopPropagation();
-      _speak(text, langCode);
+      if (_ttsActiveBtn === btn && window.speechSynthesis.speaking) {
+        window.speechSynthesis.cancel();
+        _ttsActiveBtn = null;
+        return;
+      }
+      _speak(text, langCode, btn);
     });
 
     return btn;
   }
 
-  function _speak(text, langCode) {
+  function _speak(text, langCode, activeBtn) {
     if (!text || !window.speechSynthesis || !window.SpeechSynthesisUtterance) return;
 
     var map = {
@@ -199,12 +206,18 @@ window.BiliSub.SubtitleItem = (function () {
 
     try {
       window.speechSynthesis.cancel();
+      _ttsActiveBtn = activeBtn || null;
       var utter = new window.SpeechSynthesisUtterance(text);
       if (langCode && map[langCode]) {
         utter.lang = map[langCode];
       }
+      utter.onend = utter.onerror = function () {
+        if (_ttsActiveBtn === activeBtn) _ttsActiveBtn = null;
+      };
       window.speechSynthesis.speak(utter);
-    } catch (_) {}
+    } catch (_) {
+      _ttsActiveBtn = null;
+    }
   }
 
   return { create: create };

@@ -185,8 +185,10 @@ JS:   constants → time → dom
 ### components/Header.js
 - **模块名**: `window.BiliSub.Header`（IIFE）
 - **依赖**: DOM
-- **职责**: 面板头部栏（标题 + 设置/折叠/关闭按钮）
-- **API**: `create(onSettings, onCollapse, onClose)` → HTMLElement
+- **职责**: 面板头部栏（左侧主页/设置切换标签 + 折叠/关闭按钮）
+- **API**:
+  - `create(onHome, onSettings, onCollapse, onClose)` → HTMLElement
+  - `setActive(tab)` → 手动切换高亮标签（`'home'` / `'settings'`）
 
 ### components/Settings.js
 - **模块名**: `window.BiliSub.Settings`（IIFE）

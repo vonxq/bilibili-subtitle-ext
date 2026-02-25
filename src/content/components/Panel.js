@@ -18,12 +18,43 @@ window.BiliSub.Panel = (function () {
   var _dragOffset = { x: 0, y: 0 };
   var _emptyEl = null;
 
+  function _centerCurrentSentence() {
+    try {
+      if (!PlayerService || !SubtitleList || typeof PlayerService.getCurrentTime !== 'function') return;
+      var time = PlayerService.getCurrentTime();
+      if (typeof time !== 'number' || isNaN(time)) return;
+      if (typeof SubtitleList.highlightCurrent === 'function') {
+        SubtitleList.highlightCurrent(time, true);
+      }
+    } catch (_) {}
+  }
+
   function create() {
     _panel = DOM.create('div', 'bili-sub-panel bili-sub-panel--hidden');
 
     // Header
     var header = Header.create(
-      function () { Settings.toggle(); },
+      function () {
+        Settings.close();
+        if (Header && typeof Header.setActive === 'function') {
+          Header.setActive('home');
+        }
+        _centerCurrentSentence();
+      },
+      function () {
+        if (Settings.isOpen()) {
+          Settings.close();
+          if (Header && typeof Header.setActive === 'function') {
+            Header.setActive('home');
+          }
+          _centerCurrentSentence();
+        } else {
+          Settings.toggle();
+          if (Header && typeof Header.setActive === 'function') {
+            Header.setActive('settings');
+          }
+        }
+      },
       _handleCollapse,
       _handleClose
     );
@@ -62,8 +93,12 @@ window.BiliSub.Panel = (function () {
     SubtitleService.onUpdate(function (timeline, langs) {
       _panel.classList.remove('bili-sub-panel--hidden');
       Settings.close();
+      if (Header && typeof Header.setActive === 'function') {
+        Header.setActive('home');
+      }
       SubtitleList.render(ModeSelector.getMode());
       _updateEmptyState(timeline.length > 0);
+      _centerCurrentSentence();
     });
 
     // Highlight tracking
@@ -102,7 +137,7 @@ window.BiliSub.Panel = (function () {
 
   function _setupDrag(headerEl) {
     headerEl.addEventListener('mousedown', function (e) {
-      if (e.target.closest('.bili-sub-header__btn')) return;
+      if (e.target.closest('.bili-sub-header__btn') || e.target.closest('.bili-sub-header__tab')) return;
       _isDragging = true;
       var rect = _panel.getBoundingClientRect();
       _dragOffset.x = e.clientX - rect.left;
