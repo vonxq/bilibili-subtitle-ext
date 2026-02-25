@@ -46,7 +46,7 @@ window.BiliSub.Constants = {
   DEFAULTS: {
     NATIVE_LANG: 'zh',
     TARGET_LANG: 'en',
-    DISPLAY_MODE: 'learning',
+    DISPLAY_MODE: 'assisted',
     PLAYBACK_SPEED: 1,
   },
 

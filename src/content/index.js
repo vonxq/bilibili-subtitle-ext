@@ -8,11 +8,15 @@ window.BiliSub = window.BiliSub || {};
 
   var DOM = window.BiliSub.DOM;
   var Panel = window.BiliSub.Panel;
+  var AutoSubtitleService = window.BiliSub.AutoSubtitleService;
 
   function init() {
     var scriptUrl = chrome.runtime.getURL('src/inject.js');
     DOM.injectPageScript(scriptUrl);
     Panel.create();
+    if (AutoSubtitleService && typeof AutoSubtitleService.init === 'function') {
+      AutoSubtitleService.init();
+    }
   }
 
   chrome.runtime.onMessage.addListener(function (msg) {

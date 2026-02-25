@@ -1,7 +1,7 @@
 # Bilibili 字幕助手 — 代码索引
 
 > 最后更新：2026-02-25
-> 总行数：2273 行（21 个源文件）
+> 总行数：2364 行（22 个源文件）
 
 ## 项目概览
 
@@ -28,7 +28,8 @@ bilibili-subtitle-ext/
 │   │   │   ├── player-service.js           (51行)   # 视频播放器控制
 │   │   │   ├── repeater-service.js        (153行)   # 循环重播核心引擎
 │   │   │   ├── sentence-service.js        (160行)   # 字幕智能分句算法
-│   │   │   └── subtitle-service.js        (147行)   # 字幕数据管理与双语合并
+│   │   │   ├── subtitle-service.js        (147行)   # 字幕数据管理与双语合并
+│   │   │   └── auto-subtitle-service.js    (91行)   # 自动控制 B 站字幕菜单/双语开关
 │   │   ├── components/
 │   │   │   ├── Header.js                   (50行)   # 面板头部栏
 │   │   │   ├── Settings.js                 (93行)   # 语言设置面板
@@ -51,7 +52,7 @@ bilibili-subtitle-ext/
 ```
 CSS:  panel.css → filter.css → subtitle.css
 JS:   constants → time → dom
-    → player-service → repeater-service → sentence-service → subtitle-service
+    → player-service → repeater-service → sentence-service → subtitle-service → auto-subtitle-service
     → SubtitleItem → SubtitleList → ABRepeatBar
     → Settings → ModeSelector → SpeedControl → Header → Panel
     → index.js（入口）
@@ -72,7 +73,7 @@ JS:   constants → time → dom
   - `SUPPORTED_LANGS` — `['zh', 'en', 'ja', 'ko']`
   - `SELECTORS` — DOM 选择器（`VIDEO`, `PLAYER_CONTAINER`, `VIDEO_WRAPPER`）
   - `STORAGE_KEYS` — chrome.storage 存储键
-  - `DEFAULTS` — 默认配置（母语 zh、目标语 en、学习模式、速度 1x）
+  - `DEFAULTS` — 默认配置（母语 zh、目标语 en、辅助模式、速度 1x）
   - `SENTENCE` — 分句算法参数（最大合并数 4、时间间隔阈值 1.5s 等）
   - `REPEATER` — 循环重播配置：`LOOP_OPTIONS: [Infinity, 5]`，`PAUSE_BETWEEN_LOOPS: 500`
   - `SPEED_OPTIONS` — `[0.5, 0.75, 1, 1.25, 1.5]`
@@ -149,6 +150,19 @@ JS:   constants → time → dom
   - `getSettings()` → `{ nativeLang, targetLang }`
   - `onUpdate(callback)` → 注册数据更新监听
 - **监听事件**: `SUBTITLE_DATA`（添加数据）、`SUBTITLE_URLS`（自动拉取缺失语言）
+
+### services/auto-subtitle-service.js
+- **模块名**: `window.BiliSub.AutoSubtitleService`（IIFE）
+- **依赖**: DOM, SubtitleService
+- **职责**: 在获取到字幕时间轴后，自动打开 B 站播放器的字幕菜单、开启双语字幕开关，并按扩展设置选择主/副字幕语言
+- **API**:
+  - `applyPreferredLanguagesOnce(timeline, langs)` → 仅在首次有字幕数据时尝试应用一遍首选语言
+- **行为细节**:
+  - 通过 `SubtitleService.onUpdate` 监听时间轴更新，首次收到非空 `timeline` 时触发
+  - 使用 `DOM.waitForElement('.bpx-player-ctrl-btn.bpx-player-ctrl-subtitle')` 等待播放器字幕按钮渲染完成
+  - 若字幕菜单未展开，则点击按钮展开，并在短暂延时后获取 `.bpx-player-ctrl-subtitle-menu` 根节点
+  - 若存在 `.bpx-player-ctrl-subtitle-bilingual-above` 或 `.bpx-player-ctrl-subtitle-bilingual-bottom` 中的 `input.bui-switch-input`，则保证其处于选中状态（开启双语字幕）
+  - 读取 `SubtitleService.getSettings()` 的 `nativeLang` / `targetLang`，映射为 `ai-xx` 形式，在主字幕区域 `.bpx-player-ctrl-subtitle-major-inner` 和副字幕区域 `.bpx-player-ctrl-subtitle-minor-inner` 中查找对应 `data-lan` 条目并点击选择
 
 ---
 
