@@ -17,7 +17,8 @@
     "*://api.bilibili.com/*"
   ],
   "action": {
-    "default_title": "Bilibili 字幕助手"
+    "default_title": "Bilibili 字幕助手",
+    "default_popup": "src/options/popup.html"
   },
   "background": {
     "service_worker": "src/background/service-worker.js"

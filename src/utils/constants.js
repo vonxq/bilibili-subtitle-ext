@@ -19,13 +19,15 @@ window.BiliSub.Constants = {
     ASSISTED: 'assisted',
   },
 
-  SUPPORTED_LANGS: ['zh', 'en', 'ja', 'ko'],
+  SUPPORTED_LANGS: ['zh', 'en', 'ja', 'es', 'ar', 'pt'],
 
   LANG_NAMES: {
     zh: '中文',
     en: 'English',
     ja: '日本語',
-    ko: '한국어',
+    es: 'Español',
+    ar: 'العربية',
+    pt: 'Português',
   },
 
   SELECTORS: {
@@ -41,6 +43,8 @@ window.BiliSub.Constants = {
     PANEL_POSITION: 'bili-sub-panel-pos',
     PANEL_COLLAPSED: 'bili-sub-panel-collapsed',
     PLAYBACK_SPEED: 'bili-sub-speed',
+    DEFAULT_MODE_STRATEGY: 'bili-sub-default-mode-strategy',
+    DEFAULT_MODE: 'bili-sub-default-mode',
   },
 
   DEFAULTS: {

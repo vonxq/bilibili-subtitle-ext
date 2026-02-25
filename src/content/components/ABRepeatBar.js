@@ -5,6 +5,7 @@ window.BiliSub.ABRepeatBar = (function () {
   var Time = window.BiliSub.Time;
   var Constants = window.BiliSub.Constants;
   var RepeaterService = window.BiliSub.RepeaterService;
+  var LicenseService = window.BiliSub.LicenseService;
 
   var _bar = null;
   var _state = 'idle';

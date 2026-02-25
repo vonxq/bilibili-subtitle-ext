@@ -63,10 +63,29 @@ window.BiliSub.ModeSelector = (function () {
   function _loadSaved() {
     try {
       if (chrome && chrome.storage && chrome.storage.local) {
-        chrome.storage.local.get(Constants.STORAGE_KEYS.DISPLAY_MODE, function (result) {
-          var m = result[Constants.STORAGE_KEYS.DISPLAY_MODE];
-          if (m && MODES.some(function (mo) { return mo.id === m; })) {
-            _currentMode = m;
+        var keys = {};
+        keys[Constants.STORAGE_KEYS.DISPLAY_MODE] = null;
+        keys[Constants.STORAGE_KEYS.DEFAULT_MODE_STRATEGY] = null;
+        keys[Constants.STORAGE_KEYS.DEFAULT_MODE] = null;
+
+        chrome.storage.local.get(keys, function (result) {
+          var savedMode = result[Constants.STORAGE_KEYS.DISPLAY_MODE];
+          var strategy = result[Constants.STORAGE_KEYS.DEFAULT_MODE_STRATEGY] || 'last';
+          var fixedMode = result[Constants.STORAGE_KEYS.DEFAULT_MODE];
+
+          function isValid(modeId) {
+            return MODES.some(function (mo) { return mo.id === modeId; });
+          }
+
+          if (strategy === 'fixed' && isValid(fixedMode)) {
+            _currentMode = fixedMode;
+            render();
+            if (_onChange) _onChange(_currentMode);
+            return;
+          }
+
+          if (savedMode && isValid(savedMode)) {
+            _currentMode = savedMode;
             render();
             if (_onChange) _onChange(_currentMode);
           }

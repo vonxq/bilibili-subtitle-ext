@@ -3,6 +3,7 @@ window.BiliSub = window.BiliSub || {};
 window.BiliSub.AutoSubtitleService = (function () {
   var DOM = window.BiliSub.DOM;
   var SubtitleService = window.BiliSub.SubtitleService;
+  var Constants = window.BiliSub.Constants;
 
   var _configuredOnce = false;
   var _turnedOffOnce = false;
@@ -73,6 +74,17 @@ window.BiliSub.AutoSubtitleService = (function () {
       var aiLan = mapToAiLan(lang);
       if (aiLan) {
         item = container.querySelector('[data-lan="' + aiLan + '"]');
+      }
+      if (!item && Constants && Constants.LANG_NAMES && Constants.LANG_NAMES[lang]) {
+        var label = Constants.LANG_NAMES[lang];
+        var candidates = container.querySelectorAll('.bpx-player-ctrl-subtitle-language-item');
+        for (var i = 0; i < candidates.length; i++) {
+          var textEl = candidates[i].querySelector('.bpx-player-ctrl-subtitle-language-item-text');
+          if (textEl && textEl.textContent.trim() === label) {
+            item = candidates[i];
+            break;
+          }
+        }
       }
     }
 

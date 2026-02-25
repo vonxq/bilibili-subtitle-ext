@@ -5,6 +5,7 @@ window.BiliSub.SubtitleItem = (function () {
   var Time = window.BiliSub.Time;
   var Constants = window.BiliSub.Constants;
   var RepeaterService = window.BiliSub.RepeaterService;
+  var SubtitleService = window.BiliSub.SubtitleService;
 
   var PLAY_SVG = '<svg viewBox="0 0 24 24"><polygon points="6,4 20,12 6,20"/></svg>';
   var LOOP_SVG = '<svg viewBox="0 0 24 24"><path d="M17 1l4 4-4 4"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><path d="M7 23l-4-4 4-4"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>';
@@ -89,21 +90,40 @@ window.BiliSub.SubtitleItem = (function () {
     var MODES = Constants.DISPLAY_MODES;
     var hasTarget = !!sentence.target;
     var hasNative = !!sentence.native;
+    var langs = SubtitleService && typeof SubtitleService.getSettings === 'function'
+      ? SubtitleService.getSettings()
+      : { nativeLang: Constants.DEFAULTS.NATIVE_LANG, targetLang: Constants.DEFAULTS.TARGET_LANG };
 
     if (displayMode === MODES.BILINGUAL) {
       if (hasTarget) {
-        item.appendChild(DOM.create('div', 'bili-sub-item__target', { textContent: sentence.target }));
+        var targetRow = DOM.create('div', 'bili-sub-item__target-row');
+        var targetText = DOM.create('div', 'bili-sub-item__target', { textContent: sentence.target });
+        var targetTts = _createTtsBtnFor(sentence.target, langs.targetLang, '朗读目标语');
+        DOM.appendChildren(targetRow, targetText, targetTts);
+        item.appendChild(targetRow);
       }
       if (hasNative) {
-        item.appendChild(DOM.create('div', 'bili-sub-item__native', { textContent: sentence.native }));
+        var nativeRow = DOM.create('div', 'bili-sub-item__native-row');
+        var nativeText = DOM.create('div', 'bili-sub-item__native', { textContent: sentence.native });
+        var nativeTts = _createTtsBtnFor(sentence.native, langs.nativeLang, '朗读母语');
+        DOM.appendChildren(nativeRow, nativeText, nativeTts);
+        item.appendChild(nativeRow);
       }
     } else if (displayMode === MODES.LEARNING) {
       if (hasTarget) {
-        item.appendChild(DOM.create('div', 'bili-sub-item__target', { textContent: sentence.target }));
+        var lTargetRow = DOM.create('div', 'bili-sub-item__target-row');
+        var lTargetText = DOM.create('div', 'bili-sub-item__target', { textContent: sentence.target });
+        var lTargetTts = _createTtsBtnFor(sentence.target, langs.targetLang, '朗读目标语');
+        DOM.appendChildren(lTargetRow, lTargetText, lTargetTts);
+        item.appendChild(lTargetRow);
       }
       if (hasNative) {
         var reveal = DOM.create('div', 'bili-sub-item__reveal');
-        reveal.appendChild(DOM.create('div', 'bili-sub-item__native', { textContent: sentence.native }));
+        var lNativeRow = DOM.create('div', 'bili-sub-item__native-row');
+        var lNativeText = DOM.create('div', 'bili-sub-item__native', { textContent: sentence.native });
+        var lNativeTts = _createTtsBtnFor(sentence.native, langs.nativeLang, '朗读母语');
+        DOM.appendChildren(lNativeRow, lNativeText, lNativeTts);
+        reveal.appendChild(lNativeRow);
         item.appendChild(reveal);
 
         var revealBtn = DOM.create('button', 'bili-sub-item__reveal-btn');
@@ -119,11 +139,19 @@ window.BiliSub.SubtitleItem = (function () {
       }
     } else if (displayMode === MODES.ASSISTED) {
       if (hasNative) {
-        item.appendChild(DOM.create('div', 'bili-sub-item__target', { textContent: sentence.native }));
+        var aNativeRow = DOM.create('div', 'bili-sub-item__target-row');
+        var aNativeText = DOM.create('div', 'bili-sub-item__target', { textContent: sentence.native });
+        var aNativeTts = _createTtsBtnFor(sentence.native, langs.nativeLang, '朗读母语');
+        DOM.appendChildren(aNativeRow, aNativeText, aNativeTts);
+        item.appendChild(aNativeRow);
       }
       if (hasTarget) {
         var reveal2 = DOM.create('div', 'bili-sub-item__reveal');
-        reveal2.appendChild(DOM.create('div', 'bili-sub-item__native', { textContent: sentence.target }));
+        var aTargetRow = DOM.create('div', 'bili-sub-item__native-row');
+        var aTargetText = DOM.create('div', 'bili-sub-item__native', { textContent: sentence.target });
+        var aTargetTts = _createTtsBtnFor(sentence.target, langs.targetLang, '朗读目标语');
+        DOM.appendChildren(aTargetRow, aTargetText, aTargetTts);
+        reveal2.appendChild(aTargetRow);
         item.appendChild(reveal2);
 
         var revealBtn2 = DOM.create('button', 'bili-sub-item__reveal-btn');
@@ -138,6 +166,41 @@ window.BiliSub.SubtitleItem = (function () {
         item.appendChild(revealBtn2);
       }
     }
+  }
+
+  function _createTtsBtnFor(text, langCode, label) {
+    var btn = DOM.create('button', 'bili-sub-item__tts-btn');
+    btn.innerHTML = '<span class="bili-sub-item__tts-icon">🔊</span>';
+    btn.title = label || '朗读';
+
+    btn.addEventListener('click', function (e) {
+      e.stopPropagation();
+      _speak(text, langCode);
+    });
+
+    return btn;
+  }
+
+  function _speak(text, langCode) {
+    if (!text || !window.speechSynthesis || !window.SpeechSynthesisUtterance) return;
+
+    var map = {
+      zh: 'zh-CN',
+      en: 'en-US',
+      ja: 'ja-JP',
+      es: 'es-ES',
+      ar: 'ar-SA',
+      pt: 'pt-PT',
+    };
+
+    try {
+      window.speechSynthesis.cancel();
+      var utter = new window.SpeechSynthesisUtterance(text);
+      if (langCode && map[langCode]) {
+        utter.lang = map[langCode];
+      }
+      window.speechSynthesis.speak(utter);
+    } catch (_) {}
   }
 
   return { create: create };

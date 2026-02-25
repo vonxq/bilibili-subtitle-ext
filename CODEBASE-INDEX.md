@@ -43,6 +43,9 @@ bilibili-subtitle-ext/
 │   │       ├── panel.css                  (138行)   # 面板、设置面板样式 + CSS变量
 │   │       ├── filter.css                  (92行)   # 模式选择器、速度控制样式
 │   │       └── subtitle.css               (379行)   # 字幕项、循环按钮、AB栏样式
+│   ├── options/
+│   │   ├── popup.html                      (90行)   # 浏览器工具栏图标点击时的设置弹窗
+│   │   └── popup.js                       (140行)   # 弹窗逻辑（语言设置、默认模式、授权码）
 ```
 
 ---
@@ -70,9 +73,9 @@ JS:   constants → time → dom
 - **关键内容**:
   - `EVENTS` — 9 个自定义事件名（`SUBTITLE_DATA`, `SUBTITLE_URLS`, `SUBTITLE_UPDATED`, `LANGUAGE_CHANGED`, `SEEK_TO`, `PANEL_TOGGLE`, `MODE_CHANGED`, `SETTINGS_CHANGED`, `REPEATER_STATE`）
   - `DISPLAY_MODES` — `bilingual` / `learning` / `assisted`
-  - `SUPPORTED_LANGS` — `['zh', 'en', 'ja', 'ko']`
+  - `SUPPORTED_LANGS` — `['zh', 'en', 'ja', 'es', 'ar', 'pt']`
   - `SELECTORS` — DOM 选择器（`VIDEO`, `PLAYER_CONTAINER`, `VIDEO_WRAPPER`）
-  - `STORAGE_KEYS` — chrome.storage 存储键
+  - `STORAGE_KEYS` — chrome.storage 存储键（语言、显示模式、面板位置、播放速度、默认模式策略等）
   - `DEFAULTS` — 默认配置（母语 zh、目标语 en、辅助模式、速度 1x）
   - `SENTENCE` — 分句算法参数（最大合并数 4、时间间隔阈值 1.5s 等）
   - `REPEATER` — 循环重播配置：`LOOP_OPTIONS: [Infinity, 5]`，`PAUSE_BETWEEN_LOOPS: 500`
@@ -163,6 +166,19 @@ JS:   constants → time → dom
   - 若字幕菜单未展开，则点击按钮展开，并在短暂延时后获取 `.bpx-player-ctrl-subtitle-menu` 根节点
   - 若存在 `.bpx-player-ctrl-subtitle-bilingual-above` 或 `.bpx-player-ctrl-subtitle-bilingual-bottom` 中的 `input.bui-switch-input`，则保证其处于选中状态（开启双语字幕）
   - 读取 `SubtitleService.getSettings()` 的 `nativeLang` / `targetLang`，映射为 `ai-xx` 形式，在主字幕区域 `.bpx-player-ctrl-subtitle-major-inner` 和副字幕区域 `.bpx-player-ctrl-subtitle-minor-inner` 中查找对应 `data-lan` 条目并点击选择
+
+### services/license-service.js
+- **模块名**: `window.BiliSub.LicenseService`（IIFE）
+- **依赖**: Constants
+- **职责**: 管理扩展的授权状态（免费 / 专业版），在本地校验和存储授权码
+- **API**:
+  - `isPro()` → boolean，当前是否为专业版
+  - `getLicenseKey()` → string | ''，当前保存的授权码
+  - `verifyAndSave(licenseKey)` → boolean，按约定格式校验授权码，合法则写入 `chrome.storage.local`
+  - `showUpgradeDialog(feature?)` → 弹出提示，引导用户前往设置页或官网解锁
+- **授权码规则**:
+  - 预期格式：`L-YYYYMMDD-RANDOM4-CHECK2`
+  - 通过对前 3 段字符串（例如 `L-20260225-A7K3`）按字符 ASCII 求和，对 100 取模，生成 2 位校验码，与结尾 `CHECK2` 对比，一致则视为形式合法
 
 ---
 

@@ -6,3 +6,4 @@ node_modules/
 .idea/
 *.swp
 *.swo
+store_assets/
