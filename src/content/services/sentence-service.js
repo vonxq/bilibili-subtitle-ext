@@ -87,32 +87,70 @@ window.BiliSub.SentenceService = (function () {
   }
 
   /**
-   * Merge target & native sentences by time alignment.
-   * Target sentences drive grouping; native is matched by overlap.
+   * Match subtitle body items into sentence time ranges by overlap.
    */
-  function buildBilingualTimeline(targetSentences, nativeBody, nativeLang) {
-    var nativeSentences = nativeBody ? groupIntoSentences(nativeBody, nativeLang) : [];
+  function matchBodyToSentences(sentences, body, lang) {
+    var joiner = isCJK(lang) ? '' : ' ';
 
-    return targetSentences.map(function (tSent) {
+    return sentences.map(function (sent) {
       var matched = [];
-      var joiner = isCJK(nativeLang) ? '' : ' ';
-
-      nativeSentences.forEach(function (nSent) {
-        var overlap = Math.min(tSent.to, nSent.to) - Math.max(tSent.from, nSent.from);
-        var nDuration = nSent.to - nSent.from;
-        if (overlap > nDuration * 0.3) {
-          matched.push(nSent.mergedContent);
+      body.forEach(function (item) {
+        var overlap = Math.min(sent.to, item.to) - Math.max(sent.from, item.from);
+        var itemDuration = item.to - item.from;
+        if (itemDuration > 0 && overlap > itemDuration * 0.3) {
+          matched.push(item.content.trim());
         }
       });
-
-      return {
-        from: tSent.from,
-        to: tSent.to,
-        target: tSent.mergedContent,
-        native: matched.join(joiner) || '',
-        segments: tSent.segments,
-      };
+      return matched.join(joiner);
     });
+  }
+
+  /**
+   * Build bilingual timeline. Uses the language that produces fewer groups
+   * (= better merging) as the primary grouping source.
+   * This fixes AI translation adding spurious punctuation to fragments.
+   */
+  function buildBilingualTimeline(targetBody, targetLang, nativeBody, nativeLang) {
+    var targetSentences = groupIntoSentences(targetBody, targetLang);
+    var nativeSentences = nativeBody ? groupIntoSentences(nativeBody, nativeLang) : [];
+
+    var primarySentences, primaryIsTarget;
+
+    if (nativeSentences.length === 0) {
+      primarySentences = targetSentences;
+      primaryIsTarget = true;
+    } else if (targetSentences.length === 0) {
+      primarySentences = nativeSentences;
+      primaryIsTarget = false;
+    } else {
+      // Fewer groups = better merging = more likely to have correct boundaries
+      primaryIsTarget = targetSentences.length <= nativeSentences.length;
+      primarySentences = primaryIsTarget ? targetSentences : nativeSentences;
+    }
+
+    if (primaryIsTarget) {
+      var nativeTexts = nativeBody ? matchBodyToSentences(primarySentences, nativeBody, nativeLang) : [];
+      return primarySentences.map(function (sent, i) {
+        return {
+          from: sent.from,
+          to: sent.to,
+          target: sent.mergedContent,
+          native: nativeTexts[i] || '',
+          segments: sent.segments,
+        };
+      });
+    } else {
+      var targetTexts = matchBodyToSentences(primarySentences, targetBody, targetLang);
+      return primarySentences.map(function (sent, i) {
+        return {
+          from: sent.from,
+          to: sent.to,
+          target: targetTexts[i] || '',
+          native: sent.mergedContent,
+          segments: sent.segments,
+        };
+      });
+    }
   }
 
   return {

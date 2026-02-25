@@ -61,13 +61,9 @@ window.BiliSub.SubtitleService = (function () {
       return;
     }
 
-    var targetSentences = SentenceService.groupIntoSentences(
-      targetData.body,
-      _settings.targetLang
-    );
-
     _timeline = SentenceService.buildBilingualTimeline(
-      targetSentences,
+      targetData.body,
+      _settings.targetLang,
       nativeData ? nativeData.body : null,
       _settings.nativeLang
     );
