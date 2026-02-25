@@ -4,6 +4,12 @@
   if (window.__biliSubInterceptorLoaded) return;
   window.__biliSubInterceptorLoaded = true;
 
+  var _urlLangMap = {};
+
+  function _urlKey(url) {
+    return (url || '').replace(/^https?:/, '').replace(/^\/\//, '').split('?')[0];
+  }
+
   function dispatch(eventName, data) {
     window.dispatchEvent(
       new CustomEvent(eventName, {
@@ -13,20 +19,30 @@
   }
 
   function isSubtitleUrl(url) {
-    return typeof url === 'string' && url.includes('ai_subtitle');
+    return typeof url === 'string' &&
+      (url.includes('ai_subtitle') || url.includes('/bfs/subtitle/'));
   }
 
   function isPlayerApiUrl(url) {
     return typeof url === 'string' && /\/x\/player\/(wbi\/)?v2/.test(url);
   }
 
-  function handleSubtitleResponse(data) {
+  function handleSubtitleResponse(data, sourceUrl) {
+    if (!data.lang && !data.lan && sourceUrl) {
+      var lang = _urlLangMap[_urlKey(sourceUrl)];
+      if (lang) data.lan = lang;
+    }
     dispatch('bili-subtitle-data', data);
   }
 
   function handlePlayerApiResponse(data) {
     if (data && data.data && data.data.subtitle && data.data.subtitle.subtitles) {
       var subtitles = data.data.subtitle.subtitles;
+      subtitles.forEach(function (s) {
+        if (s.subtitle_url) {
+          _urlLangMap[_urlKey(s.subtitle_url)] = s.lan;
+        }
+      });
       var urls = subtitles.map(function (s) {
         return {
           lang: s.lan,
@@ -52,8 +68,8 @@
         cloned
           .json()
           .then(function (data) {
-            if (isSubtitleUrl(url)) handleSubtitleResponse(data);
             if (isPlayerApiUrl(url)) handlePlayerApiResponse(data);
+            if (isSubtitleUrl(url)) handleSubtitleResponse(data, url);
           })
           .catch(function () {});
         return response;
@@ -81,8 +97,8 @@
         if (self.status === 200) {
           try {
             var data = JSON.parse(self.responseText);
-            if (isSubtitleUrl(url)) handleSubtitleResponse(data);
             if (isPlayerApiUrl(url)) handlePlayerApiResponse(data);
+            if (isSubtitleUrl(url)) handleSubtitleResponse(data, url);
           } catch (_) {}
         }
       });

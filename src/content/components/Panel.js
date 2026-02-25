@@ -39,6 +39,7 @@ window.BiliSub.Panel = (function () {
         if (Header && typeof Header.setActive === 'function') {
           Header.setActive('home');
         }
+        SubtitleList.render(ModeSelector.getMode());
         _centerCurrentSentence();
       },
       function () {
@@ -61,10 +62,7 @@ window.BiliSub.Panel = (function () {
     _setupDrag(header);
 
     // Settings overlay
-    var settingsEl = Settings.create(function (nativeLang, targetLang) {
-      SubtitleService.setSettings(nativeLang, targetLang);
-      SubtitleList.render(ModeSelector.getMode());
-    });
+    var settingsEl = Settings.create();
 
     // Body
     var body = DOM.create('div', 'bili-sub-panel__body');
@@ -92,13 +90,11 @@ window.BiliSub.Panel = (function () {
     // React to subtitle data updates
     SubtitleService.onUpdate(function (timeline, langs) {
       _panel.classList.remove('bili-sub-panel--hidden');
-      Settings.close();
-      if (Header && typeof Header.setActive === 'function') {
-        Header.setActive('home');
-      }
       SubtitleList.render(ModeSelector.getMode());
       _updateEmptyState(timeline.length > 0);
-      _centerCurrentSentence();
+      if (!Settings.isOpen()) {
+        _centerCurrentSentence();
+      }
     });
 
     // Highlight tracking

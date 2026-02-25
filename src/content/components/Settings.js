@@ -6,16 +6,20 @@ window.BiliSub.Settings = (function () {
 
   var _container = null;
   var _isOpen = false;
-  var _onChange = null;
+  var _tipEl = null;
 
-  function create(onChange) {
-    _onChange = onChange;
+  function create() {
     _container = DOM.create('div', 'bili-sub-settings');
 
     var nativeGroup = _buildSelect('母语 / Native Language', 'native');
     var targetGroup = _buildSelect('目标语言 / Target Language', 'target');
 
-    DOM.appendChildren(_container, nativeGroup, targetGroup);
+    _tipEl = DOM.create('div', 'bili-sub-settings__tip', {
+      textContent: '修改后请刷新页面生效',
+    });
+    _tipEl.style.display = 'none';
+
+    DOM.appendChildren(_container, nativeGroup, targetGroup, _tipEl);
 
     _loadSaved();
     return _container;
@@ -34,14 +38,14 @@ window.BiliSub.Settings = (function () {
     });
 
     select.addEventListener('change', function () {
-      _saveAndNotify();
+      _save();
     });
 
     DOM.appendChildren(group, label, select);
     return group;
   }
 
-  function _saveAndNotify() {
+  function _save() {
     var nativeSelect = _container.querySelector('[data-type="native"]');
     var targetSelect = _container.querySelector('[data-type="target"]');
     var nativeLang = nativeSelect.value;
@@ -56,7 +60,7 @@ window.BiliSub.Settings = (function () {
       }
     } catch (_) {}
 
-    if (_onChange) _onChange(nativeLang, targetLang);
+    if (_tipEl) _tipEl.style.display = '';
   }
 
   function _loadSaved() {
@@ -80,11 +84,13 @@ window.BiliSub.Settings = (function () {
   function toggle() {
     _isOpen = !_isOpen;
     _container.classList.toggle('bili-sub-settings--open', _isOpen);
+    if (!_isOpen && _tipEl) _tipEl.style.display = 'none';
   }
 
   function close() {
     _isOpen = false;
     _container.classList.remove('bili-sub-settings--open');
+    if (_tipEl) _tipEl.style.display = 'none';
   }
 
   function isOpen() { return _isOpen; }

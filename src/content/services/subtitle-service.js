@@ -13,6 +13,26 @@ window.BiliSub.SubtitleService = (function () {
   };
   var _listeners = [];
 
+  function _normalizeLang(lang) {
+    if (!lang || typeof lang !== 'string') return lang;
+    if (lang.startsWith('ai-')) return lang.substring(3);
+    var dash = lang.indexOf('-');
+    if (dash > 0) return lang.substring(0, dash).toLowerCase();
+    return lang.toLowerCase();
+  }
+
+  function _detectLang(body) {
+    if (!body || !body.length) return null;
+    var sample = '';
+    for (var i = 0; i < Math.min(body.length, 5); i++) {
+      sample += (body[i].content || '') + ' ';
+    }
+    if (/[\u4e00-\u9fff]/.test(sample)) return 'zh';
+    if (/[\u3040-\u30ff]/.test(sample)) return 'ja';
+    if (/[\u0600-\u06ff]/.test(sample)) return 'ar';
+    return 'en';
+  }
+
   function onUpdate(cb) { _listeners.push(cb); }
 
   function notify() {
@@ -21,9 +41,11 @@ window.BiliSub.SubtitleService = (function () {
     });
   }
 
-  function addSubtitleData(data) {
+  function addSubtitleData(data, langHint) {
     if (!data || !data.body || !Array.isArray(data.body)) return;
-    var lang = data.lang || 'unknown';
+    var lang = data.lang || data.lan || langHint || _detectLang(data.body);
+    lang = _normalizeLang(lang || 'en');
+    data.lang = lang;
     _rawByLang[lang] = data;
     rebuildTimeline();
     notify();
@@ -91,22 +113,29 @@ window.BiliSub.SubtitleService = (function () {
     tryFetchMissing();
   }
 
+  function _findUrlEntry(lang) {
+    return _subtitleUrls.find(function (u) {
+      if (_normalizeLang(u.lang) === lang) return true;
+      return false;
+    });
+  }
+
   function tryFetchMissing() {
     var needed = [_settings.targetLang, _settings.nativeLang];
     needed.forEach(function (lang) {
       if (_rawByLang[lang]) return;
-      var entry = _subtitleUrls.find(function (u) { return u.lang === lang; });
+      var entry = _findUrlEntry(lang);
       if (entry && entry.url) {
-        fetchSubtitle(entry.url);
+        fetchSubtitle(entry.url, lang);
       }
     });
   }
 
-  function fetchSubtitle(url) {
+  function fetchSubtitle(url, langHint) {
     var fullUrl = url.startsWith('//') ? 'https:' + url : url;
     fetch(fullUrl)
       .then(function (r) { return r.json(); })
-      .then(function (data) { addSubtitleData(data); })
+      .then(function (data) { addSubtitleData(data, langHint); })
       .catch(function () {});
   }
 

@@ -137,3 +137,12 @@
   background: #1e1f22;
   color: var(--bili-sub-text);
 }
+
+.bili-sub-settings__tip {
+  font-size: 12px;
+  color: var(--bili-sub-warn);
+  padding: 8px 12px;
+  background: rgba(245, 158, 11, 0.1);
+  border-radius: var(--bili-sub-radius-sm);
+  text-align: center;
+}
