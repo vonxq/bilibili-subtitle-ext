@@ -17,10 +17,22 @@ window.BiliSub = window.BiliSub || {};
     if (AutoSubtitleService && typeof AutoSubtitleService.init === 'function') {
       AutoSubtitleService.init();
     }
+    var ShortcutService = window.BiliSub.ShortcutService;
+    if (ShortcutService && typeof ShortcutService.init === 'function') {
+      ShortcutService.init();
+    }
   }
 
   chrome.runtime.onMessage.addListener(function (msg) {
     if (msg.action === 'toggle-panel') Panel.show();
+    if (msg.action === 'clip-seek-play') {
+      var PlayerService = window.BiliSub && window.BiliSub.PlayerService;
+      if (PlayerService && typeof PlayerService.seekTo === 'function') {
+        PlayerService.seekTo(msg.from);
+        var video = PlayerService.getVideo && PlayerService.getVideo();
+        if (video && typeof video.play === 'function') video.play();
+      }
+    }
   });
 
   if (document.readyState === 'loading') {
