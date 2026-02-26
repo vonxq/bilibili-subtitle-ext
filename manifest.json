@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Bilibili 字幕学习助手",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "description": "Bilibili AI 字幕学习助手：智能分句、复读机、双语对照，助力语言学习",
   "icons": {
     "16": "icons/icon16.png",
