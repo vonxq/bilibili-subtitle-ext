@@ -6,6 +6,7 @@ window.BiliSub.ABRepeatBar = (function () {
   var Constants = window.BiliSub.Constants;
   var RepeaterService = window.BiliSub.RepeaterService;
   var LicenseService = window.BiliSub.LicenseService;
+  var SubtitleService = window.BiliSub.SubtitleService;
 
   var _bar = null;
   var _state = 'idle';
@@ -77,13 +78,33 @@ window.BiliSub.ABRepeatBar = (function () {
       var arrow2 = DOM.create('span', 'bili-sub-ab-bar__arrow', { textContent: '\u2192' });
       var labelB = DOM.create('span', 'bili-sub-ab-bar__point');
       labelB.innerHTML = 'B <span class="bili-sub-ab-bar__time">' + Time.format(_bTo) + '</span>';
+      var bookmarkAbBtn = DOM.create('button', 'bili-sub-ab-bar__bookmark-btn', { textContent: '收藏此AB段' });
+      bookmarkAbBtn.title = '收藏此 AB 段';
+      bookmarkAbBtn.addEventListener('click', function () {
+        var BookmarkDialog = window.BiliSub.BookmarkDialog;
+        if (BookmarkDialog && typeof BookmarkDialog.open === 'function' && SubtitleService && SubtitleService.getTimeline) {
+          var timeline = SubtitleService.getTimeline();
+          var sentences = timeline.filter(function (s) {
+            return s.from < _bTo && s.to > _aFrom;
+          });
+          if (sentences.length) {
+            var videoUrl = typeof location !== 'undefined' ? location.href : '';
+            var videoTitle = typeof document !== 'undefined' ? document.title : '';
+            BookmarkDialog.open({
+              type: 'segment',
+              sentences: sentences,
+              video: { url: videoUrl, title: videoTitle, from: _aFrom, to: _bTo },
+            }, { anchor: bookmarkAbBtn });
+          }
+        }
+      });
       var stopBtn = DOM.create('button', 'bili-sub-ab-bar__stop-btn', { textContent: '\u505C\u6B62' });
       stopBtn.addEventListener('click', function () {
         RepeaterService.stop();
         _clearSelection();
         _setState('idle');
       });
-      DOM.appendChildren(_bar, labelA, arrow2, labelB, stopBtn);
+      DOM.appendChildren(_bar, labelA, arrow2, labelB, bookmarkAbBtn, stopBtn);
     }
   }
 

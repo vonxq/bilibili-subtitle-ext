@@ -71,6 +71,10 @@ window.BiliSub.SubtitleList = (function () {
       var isActive = currentTime >= from && currentTime < to;
       item.classList.toggle('bili-sub-item--active', isActive);
       if (isActive) activeIndex = index;
+      var duration = to - from;
+      var progress = duration <= 0 ? 0 : Math.max(0, Math.min(1, (currentTime - from) / duration));
+      var fill = item.querySelector('.bili-sub-item__progress-fill');
+      if (fill) fill.style.width = (progress * 100) + '%';
     });
 
     if (activeIndex >= 0 && (forceScroll || activeIndex !== _lastActiveIndex) && !_isManualScrolling) {

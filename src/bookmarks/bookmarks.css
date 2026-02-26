@@ -1,0 +1,539 @@
+:root {
+  --bili-blue: #00a1d6;
+  --bili-blue-hover: #00b5e5;
+  --bili-blue-light: rgba(0, 161, 214, 0.12);
+  --bili-radius: 12px;
+  --bili-radius-sm: 8px;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  background: #f5f6f8;
+  color: #1a1a1a;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.bili-bookmarks {
+  max-width: 920px;
+  margin: 0 auto;
+  padding: 28px 24px;
+  min-height: 100vh;
+}
+
+.bili-bookmarks__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.bili-bookmarks__title {
+  font-size: 22px;
+  font-weight: 600;
+  margin: 0;
+  color: #1a1a1a;
+}
+
+.bili-bookmarks__export-btn {
+  padding: 8px 18px;
+  font-size: 13px;
+  border-radius: var(--bili-radius-sm);
+  border: none;
+  background: var(--bili-blue);
+  color: #fff;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.bili-bookmarks__export-btn:hover {
+  background: var(--bili-blue-hover);
+}
+
+.bili-bookmarks__filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-bottom: 20px;
+  padding: 14px 16px;
+  background: #fff;
+  border: 1px solid #e8e8e8;
+  border-radius: var(--bili-radius-sm);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.bili-bookmarks__filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 120px;
+}
+
+.bili-bookmarks__filter-label {
+  font-size: 11px;
+  color: #666;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.bili-bookmarks__filter-videos,
+.bili-bookmarks__filter-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 12px;
+  max-height: 80px;
+  overflow-y: auto;
+}
+
+.bili-bookmarks__filter-check {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: #444;
+  cursor: pointer;
+  white-space: nowrap;
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.bili-bookmarks__filter-check input {
+  flex-shrink: 0;
+  cursor: pointer;
+}
+
+.bili-bookmarks__filter-time {
+  padding: 6px 10px;
+  font-size: 12px;
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+  background: #fff;
+  color: #333;
+  cursor: pointer;
+}
+
+/* 显示模式栏 */
+.bili-bookmarks__mode-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.bili-bookmarks__mode-label {
+  font-size: 12px;
+  color: #666;
+}
+
+.bili-bookmarks__mode-tabs {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px;
+  background: #fff;
+  border: 1px solid #e8e8e8;
+  border-radius: var(--bili-radius-sm);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+
+.bili-bookmarks__mode-tab {
+  padding: 6px 14px;
+  font-size: 12px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: #666;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.bili-bookmarks__mode-tab:hover {
+  color: var(--bili-blue);
+}
+
+.bili-bookmarks__mode-tab--active {
+  background: var(--bili-blue-light);
+  color: var(--bili-blue);
+  font-weight: 500;
+}
+
+.bili-bookmarks__list {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+.bili-bookmarks__video-group {
+  border-radius: var(--bili-radius);
+  overflow: visible;
+}
+
+.bili-bookmarks__video-title {
+  font-size: 15px;
+  font-weight: 600;
+  margin: 0 0 12px 0;
+  padding: 0 0 8px 0;
+  color: #333;
+  border-bottom: 2px solid var(--bili-blue);
+}
+
+/* 现代卡片 */
+.bili-bookmarks__card {
+  background: #fff;
+  border-radius: var(--bili-radius);
+  border: 1px solid #e8e8e8;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  overflow: hidden;
+  font-size: 13px;
+}
+
+.bili-bookmarks__card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 16px;
+  background: #fafafa;
+  border-bottom: 1px solid #eee;
+}
+
+.bili-bookmarks__card-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.bili-bookmarks__card-meta-line {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.bili-bookmarks__card-type {
+  font-size: 11px;
+  color: var(--bili-blue);
+  background: var(--bili-blue-light);
+  padding: 3px 10px;
+  border-radius: 6px;
+  font-weight: 500;
+}
+
+.bili-bookmarks__card-time {
+  font-size: 11px;
+  font-family: 'SF Mono', Menlo, monospace;
+  color: #666;
+}
+
+.bili-bookmarks__card-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.bili-bookmarks__card-btn {
+  padding: 5px 12px;
+  font-size: 12px;
+  border-radius: 6px;
+  border: none;
+  background: #eee;
+  color: #444;
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-block;
+  transition: all 0.2s ease;
+}
+
+.bili-bookmarks__card-btn:hover {
+  background: #e0e0e0;
+  color: #1a1a1a;
+}
+
+.bili-bookmarks__card-btn--jump {
+  background: var(--bili-blue-light);
+  color: var(--bili-blue);
+}
+
+.bili-bookmarks__card-btn--jump:hover {
+  background: rgba(0, 161, 214, 0.2);
+}
+
+.bili-bookmarks__card-btn--del {
+  color: #c62828;
+  background: transparent;
+}
+
+.bili-bookmarks__card-btn--del:hover {
+  background: rgba(198, 40, 40, 0.1);
+}
+
+.bili-bookmarks__card-body {
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: row;
+  gap: 16px;
+  align-items: stretch;
+}
+
+.bili-bookmarks__card-col {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.bili-bookmarks__card-col--left {
+  flex: 3;
+  min-width: 0;
+}
+
+.bili-bookmarks__card-col--right {
+  flex: 7;
+  min-width: 0;
+}
+
+.bili-bookmarks__card-section {
+  margin: 0;
+}
+
+.bili-bookmarks__card-section--sentences .bili-bookmarks__card-sentences {
+  margin: 0;
+}
+
+.bili-bookmarks__card-sentences-summary {
+  color: #333;
+  margin-bottom: 6px;
+  font-size: 13px;
+}
+
+.bili-bookmarks__expand-btn {
+  padding: 4px 10px;
+  font-size: 11px;
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+  background: #fff;
+  color: #666;
+  cursor: pointer;
+  margin-bottom: 8px;
+  transition: all 0.2s ease;
+}
+
+.bili-bookmarks__expand-btn:hover {
+  background: var(--bili-blue-light);
+  color: var(--bili-blue);
+  border-color: var(--bili-blue);
+}
+
+.bili-bookmarks__card-sentences-detail {
+  margin-top: 8px;
+  padding-left: 10px;
+  border-left: 3px solid var(--bili-blue);
+}
+
+.bili-bookmarks__sentence-item {
+  padding: 10px 0;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.bili-bookmarks__sentence-item:last-child {
+  border-bottom: none;
+}
+
+.bili-bookmarks__sentence-reveal {
+  display: none;
+  margin-top: 4px;
+}
+
+.bili-bookmarks__sentence-item--expanded .bili-bookmarks__sentence-reveal {
+  display: block;
+}
+
+.bili-bookmarks__reveal-btn {
+  margin-top: 6px;
+  padding: 4px 0;
+  font-size: 11px;
+  border: none;
+  background: none;
+  color: var(--bili-blue);
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.bili-bookmarks__reveal-btn:hover {
+  color: var(--bili-blue-hover);
+  text-decoration: underline;
+}
+
+.bili-bookmarks__sentence-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.bili-bookmarks__sentence-time {
+  font-size: 11px;
+  font-family: 'SF Mono', Menlo, monospace;
+  color: #888;
+}
+
+.bili-bookmarks__sentence-jump {
+  font-size: 11px;
+  color: var(--bili-blue);
+  text-decoration: none;
+}
+
+.bili-bookmarks__sentence-jump:hover {
+  text-decoration: underline;
+}
+
+.bili-bookmarks__sentence-target-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+}
+
+.bili-bookmarks__sentence-target {
+  color: #1a1a1a;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.bili-bookmarks__sentence-native-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  margin-top: 2px;
+}
+
+.bili-bookmarks__sentence-native {
+  color: #555;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+/* TTS */
+.bili-bookmarks__tts-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: none;
+  background: transparent;
+  color: #999;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+  padding: 0;
+  margin-top: 1px;
+}
+
+.bili-bookmarks__tts-btn:hover {
+  background: var(--bili-blue-light);
+  color: var(--bili-blue);
+}
+
+/* 备注区块 */
+.bili-bookmarks__card-section--note .bili-bookmarks__card-note {
+  margin: 0;
+  padding: 10px 12px;
+  background: #f9f9f9;
+  border-radius: var(--bili-radius-sm);
+  font-size: 12px;
+  line-height: 1.6;
+  color: #333;
+  border: 1px solid #eee;
+}
+
+.bili-bookmarks__card-note h1,
+.bili-bookmarks__card-note h2,
+.bili-bookmarks__card-note h3 {
+  color: #1a1a1a;
+  margin: 0 0 6px 0;
+}
+
+.bili-bookmarks__card-note img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 6px;
+  margin: 6px 0;
+}
+
+.bili-bookmarks__card-note a {
+  color: var(--bili-blue);
+}
+
+/* 标签区块（头部下方一行） */
+.bili-bookmarks__card-meta-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 2px;
+}
+
+.bili-bookmarks__tag {
+  font-size: 11px;
+  padding: 3px 10px;
+  background: var(--bili-blue-light);
+  color: var(--bili-blue);
+  border-radius: 999px;
+}
+
+/* 视频切片区块 */
+.bili-bookmarks__card-section--clip .bili-bookmarks__card-clip {
+  position: relative;
+  margin: 0;
+  border-radius: var(--bili-radius-sm);
+  overflow: hidden;
+  background: #000;
+}
+
+.bili-bookmarks__clip-video {
+  display: block;
+  width: 100%;
+  max-height: 220px;
+  border-radius: var(--bili-radius-sm);
+  background: #000;
+}
+
+.bili-bookmarks__clip-fullscreen-btn {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  padding: 5px 12px;
+  font-size: 11px;
+  border-radius: 6px;
+  border: none;
+  background: rgba(0, 0, 0, 0.65);
+  color: #fff;
+  cursor: pointer;
+  transition: background 0.2s ease;
+  z-index: 1;
+}
+
+.bili-bookmarks__clip-fullscreen-btn:hover {
+  background: rgba(0, 0, 0, 0.85);
+}
+
+.bili-bookmarks__empty {
+  text-align: center;
+  padding: 56px 24px;
+  color: #666;
+  background: #fff;
+  border-radius: var(--bili-radius);
+  border: 1px dashed #ddd;
+}
+
+.bili-bookmarks__empty-hint {
+  font-size: 13px;
+  margin-top: 10px;
+  color: #888;
+}

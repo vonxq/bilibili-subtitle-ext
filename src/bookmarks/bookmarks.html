@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <title>收藏 - Bilibili 字幕助手</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="bookmarks.css" />
+</head>
+<body>
+  <div class="bili-bookmarks">
+    <header class="bili-bookmarks__header">
+      <h1 class="bili-bookmarks__title">我的收藏</h1>
+      <button type="button" class="bili-bookmarks__export-btn" id="export-btn">导出 JSON</button>
+    </header>
+
+    <aside class="bili-bookmarks__filters">
+      <div class="bili-bookmarks__filter-group">
+        <label class="bili-bookmarks__filter-label">按视频</label>
+        <div class="bili-bookmarks__filter-videos" id="filter-videos"></div>
+      </div>
+      <div class="bili-bookmarks__filter-group">
+        <label class="bili-bookmarks__filter-label">按标签</label>
+        <div class="bili-bookmarks__filter-tags" id="filter-tags"></div>
+      </div>
+      <div class="bili-bookmarks__filter-group">
+        <label class="bili-bookmarks__filter-label">收藏时间</label>
+        <select class="bili-bookmarks__filter-time" id="filter-time">
+          <option value="all">全部</option>
+          <option value="7">最近 7 天</option>
+          <option value="30">最近 30 天</option>
+          <option value="90">最近 90 天</option>
+        </select>
+      </div>
+    </aside>
+
+    <div class="bili-bookmarks__mode-bar">
+      <span class="bili-bookmarks__mode-label">显示模式</span>
+      <div class="bili-bookmarks__mode-tabs" id="mode-tabs">
+        <button type="button" class="bili-bookmarks__mode-tab bili-bookmarks__mode-tab--active" data-mode="bilingual">双语</button>
+        <button type="button" class="bili-bookmarks__mode-tab" data-mode="learning">学习</button>
+        <button type="button" class="bili-bookmarks__mode-tab" data-mode="assisted">辅助</button>
+      </div>
+    </div>
+
+    <main class="bili-bookmarks__list" id="bookmarks-list"></main>
+
+    <div class="bili-bookmarks__empty" id="empty-state" style="display: none;">
+      <p>暂无收藏</p>
+      <p class="bili-bookmarks__empty-hint">在 B 站视频页打开字幕助手，点击句子旁的收藏按钮即可收藏</p>
+    </div>
+  </div>
+  <script src="bookmarks.js"></script>
+</body>
+</html>

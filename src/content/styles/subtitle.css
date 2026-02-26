@@ -88,6 +88,17 @@
   stroke-linejoin: round;
 }
 
+.bili-sub-header__btn--bookmark svg {
+  width: 14px;
+  height: 14px;
+  fill: currentColor;
+  stroke: none;
+}
+
+.bili-sub-header__btn--bookmark:hover {
+  color: var(--bili-sub-primary);
+}
+
 .bili-sub-header__btn--collapse svg {
   transition: transform 0.3s ease;
 }
@@ -202,12 +213,64 @@
   font-size: 10px;
 }
 
+.bili-sub-item__bookmark-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: none;
+  cursor: pointer;
+  transition: all var(--bili-sub-transition);
+  padding: 0;
+  flex-shrink: 0;
+  background: transparent;
+  color: var(--bili-sub-text-secondary);
+}
+
+.bili-sub-item__bookmark-btn:hover {
+  background: var(--bili-sub-surface-hover);
+  color: var(--bili-sub-primary);
+}
+
+.bili-sub-item__bookmark-btn svg {
+  width: 14px;
+  height: 14px;
+  fill: currentColor;
+}
+
 .bili-sub-item__time {
   font-size: 11px;
   font-family: 'SF Mono', 'Fira Code', Menlo, monospace;
   color: var(--bili-sub-text-muted);
   letter-spacing: 0.3px;
   margin-left: auto;
+}
+
+.bili-sub-item__progress-wrap {
+  margin-top: 6px;
+  cursor: pointer;
+}
+
+.bili-sub-item__progress-track {
+  height: 4px;
+  border-radius: 2px;
+  background: var(--bili-sub-surface);
+  overflow: hidden;
+  transition: background var(--bili-sub-transition);
+}
+
+.bili-sub-item__progress-wrap:hover .bili-sub-item__progress-track {
+  background: var(--bili-sub-surface-hover);
+}
+
+.bili-sub-item__progress-fill {
+  height: 100%;
+  width: 0%;
+  background: var(--bili-sub-primary);
+  border-radius: 2px;
+  transition: width 0.15s linear;
 }
 
 .bili-sub-item__target-row,
@@ -422,6 +485,23 @@
   background: rgba(239, 68, 68, 1);
 }
 
+.bili-sub-ab-bar__bookmark-btn {
+  padding: 3px 8px;
+  font-size: 11px;
+  color: var(--bili-sub-primary);
+  background: var(--bili-sub-primary-alpha);
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all var(--bili-sub-transition);
+  margin-left: 4px;
+}
+
+.bili-sub-ab-bar__bookmark-btn:hover {
+  background: rgba(0, 161, 214, 0.25);
+  color: var(--bili-sub-primary-hover);
+}
+
 /* AB selection mode */
 .bili-sub-list--ab-selecting .bili-sub-item {
   cursor: pointer;
@@ -440,4 +520,484 @@
 .bili-sub-item--ab-range {
   border-left-color: var(--bili-sub-primary);
   background: rgba(0, 161, 214, 0.06);
+}
+
+/* NoteEditor */
+.bili-sub-note-editor {
+  margin-top: 8px;
+}
+.bili-sub-note-editor--split {
+  display: flex;
+  gap: 12px;
+  align-items: stretch;
+}
+.bili-sub-note-editor--split .bili-sub-note-editor__edit-wrap,
+.bili-sub-note-editor--split .bili-sub-note-editor__preview-wrap {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+.bili-sub-note-editor__preview-label {
+  font-size: 11px;
+  color: var(--bili-sub-text-muted);
+  margin-bottom: 4px;
+}
+.bili-sub-note-editor__edit-wrap--hidden,
+.bili-sub-note-editor__preview-wrap--hidden {
+  display: none !important;
+}
+.bili-sub-note-editor__textarea {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 8px 10px;
+  font-size: 12px;
+  line-height: 1.5;
+  border: 1px solid var(--bili-sub-border);
+  border-radius: var(--bili-sub-radius-sm);
+  background: var(--bili-sub-bg);
+  color: var(--bili-sub-text);
+  resize: none;
+  min-height: 100px;
+  flex: 1;
+}
+.bili-sub-note-editor__textarea:focus {
+  outline: none;
+  border-color: var(--bili-sub-primary);
+}
+.bili-sub-note-editor__preview-wrap {
+  padding: 8px 10px;
+  font-size: 12px;
+  line-height: 1.6;
+  border: 1px solid var(--bili-sub-border);
+  border-radius: var(--bili-sub-radius-sm);
+  background: rgba(0, 0, 0, 0.2);
+  color: var(--bili-sub-text);
+  overflow-y: auto;
+  min-height: 100px;
+}
+.bili-sub-note-editor__preview-wrap .bili-sub-note-editor__preview {
+  flex: 1;
+}
+.bili-sub-note-editor__preview h1 { font-size: 14px; margin: 0 0 6px; }
+.bili-sub-note-editor__preview h2 { font-size: 13px; margin: 0 0 4px; }
+.bili-sub-note-editor__preview h3 { font-size: 12px; margin: 0 0 2px; }
+.bili-sub-note-editor__preview code {
+  background: var(--bili-sub-surface);
+  padding: 1px 4px;
+  border-radius: 4px;
+  font-size: 11px;
+}
+.bili-sub-note-editor__preview a { color: var(--bili-sub-primary); }
+.bili-sub-note-editor__img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 4px;
+  margin: 4px 0;
+}
+.bili-sub-note-editor__img-placeholder {
+  color: var(--bili-sub-text-muted);
+  font-size: 11px;
+}
+
+/* BookmarkDialog */
+.bili-sub-bookmark-dialog {
+  position: fixed;
+  inset: 0;
+  z-index: 100000;
+  display: flex;
+  align-items: stretch;
+  justify-content: flex-end;
+  background: transparent;
+  pointer-events: none;
+  padding: 0;
+  box-sizing: border-box;
+}
+.bili-sub-bookmark-dialog--hidden {
+  display: none !important;
+}
+.bili-sub-bookmark-dialog__box {
+  width: 420px;
+  max-width: 100%;
+  height: 100vh;
+  max-height: none;
+  display: flex;
+  flex-direction: column;
+  background: rgba(24, 25, 28, 0.98);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 0;
+  box-shadow: -8px 0 20px rgba(0, 0, 0, 0.35);
+  pointer-events: auto;
+  overflow: hidden;
+}
+.bili-sub-bookmark-dialog__title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 14px 16px 10px;
+  flex-shrink: 0;
+  border-bottom: 1px solid var(--bili-sub-border);
+  background: rgba(24, 25, 28, 0.98);
+}
+.bili-sub-bookmark-dialog__title-text {
+  font-size: 15px;
+  font-weight: 600;
+  margin: 0;
+  color: #fff;
+}
+.bili-sub-bookmark-dialog__title-close {
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  border: none;
+  background: transparent;
+  color: #bbb;
+  cursor: pointer;
+  font-size: 18px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+.bili-sub-bookmark-dialog__title-close:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+}
+.bili-sub-bookmark-dialog__scroll-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 12px 16px;
+  min-height: 0;
+}
+.bili-sub-bookmark-dialog__preview {
+  margin-bottom: 12px;
+  padding: 10px;
+  background: var(--bili-sub-surface);
+  border-radius: var(--bili-sub-radius-sm);
+  font-size: 12px;
+}
+.bili-sub-bookmark-dialog__preview-item {
+  margin-bottom: 8px;
+}
+.bili-sub-bookmark-dialog__preview-item:last-child { margin-bottom: 0; }
+.bili-sub-bookmark-dialog__preview-target,
+.bili-sub-bookmark-dialog__preview-native {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 6px 8px;
+  font-size: 12px;
+  line-height: 1.4;
+  border: 1px solid var(--bili-sub-border);
+  border-radius: 4px;
+  background: var(--bili-sub-bg);
+  color: var(--bili-sub-text);
+  margin-bottom: 4px;
+}
+.bili-sub-bookmark-dialog__preview-target:focus,
+.bili-sub-bookmark-dialog__preview-native:focus {
+  outline: none;
+  border-color: var(--bili-sub-primary);
+}
+.bili-sub-bookmark-dialog__preview-native {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.75);
+}
+.bili-sub-bookmark-dialog__preview-time {
+  display: block;
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.5);
+  margin-top: 4px;
+}
+.bili-sub-bookmark-dialog__label {
+  display: block;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.8);
+  margin-bottom: 6px;
+  font-weight: 500;
+}
+.bili-sub-bookmark-dialog__tags-wrap {
+  margin-top: 12px;
+  margin-bottom: 12px;
+}
+.bili-sub-bookmark-dialog__tags-row {
+  position: relative;
+}
+.bili-sub-bookmark-dialog__tags-input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 6px 10px;
+  font-size: 12px;
+  border: 1px solid var(--bili-sub-border);
+  border-radius: var(--bili-sub-radius-sm);
+  background: var(--bili-sub-bg);
+  color: #fff;
+  outline: none;
+}
+.bili-sub-bookmark-dialog__tags-input:focus {
+  border-color: var(--bili-sub-primary);
+}
+.bili-sub-bookmark-dialog__suggest {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 100%;
+  margin-top: 2px;
+  max-height: 120px;
+  overflow-y: auto;
+  background: var(--bili-sub-bg);
+  border: 1px solid var(--bili-sub-border);
+  border-radius: var(--bili-sub-radius-sm);
+  z-index: 10;
+}
+.bili-sub-bookmark-dialog__suggest--hidden {
+  display: none !important;
+}
+.bili-sub-bookmark-dialog__suggest-item {
+  padding: 6px 10px;
+  font-size: 12px;
+  color: var(--bili-sub-text);
+  cursor: pointer;
+  transition: background var(--bili-sub-transition);
+}
+.bili-sub-bookmark-dialog__suggest-item:hover {
+  background: var(--bili-sub-surface-hover);
+}
+.bili-sub-bookmark-dialog__tags-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+}
+.bili-sub-bookmark-dialog__tag-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  font-size: 11px;
+  background: var(--bili-sub-primary-alpha);
+  color: var(--bili-sub-primary);
+  border-radius: 999px;
+}
+.bili-sub-bookmark-dialog__tag-chip-close {
+  cursor: pointer;
+  opacity: 0.8;
+}
+.bili-sub-bookmark-dialog__tag-chip-close:hover {
+  opacity: 1;
+}
+.bili-sub-bookmark-dialog__actions {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  flex-shrink: 0;
+  border-top: 1px solid var(--bili-sub-border);
+  background: rgba(24, 25, 28, 0.98);
+}
+.bili-sub-bookmark-dialog__btn {
+  padding: 6px 14px;
+  font-size: 12px;
+  border-radius: var(--bili-sub-radius-sm);
+  border: none;
+  cursor: pointer;
+  transition: all var(--bili-sub-transition);
+}
+.bili-sub-bookmark-dialog__btn--primary {
+  background: var(--bili-sub-primary);
+  color: #fff;
+}
+.bili-sub-bookmark-dialog__btn--primary:hover {
+  background: var(--bili-sub-primary-hover);
+}
+.bili-sub-bookmark-dialog__btn--secondary {
+  background: var(--bili-sub-surface);
+  color: var(--bili-sub-text);
+}
+.bili-sub-bookmark-dialog__btn--secondary:hover {
+  background: var(--bili-sub-surface-hover);
+}
+
+.bili-sub-bookmark-dialog__record-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-right: auto;
+}
+
+.bili-sub-bookmark-dialog__btn--record {
+  background: var(--bili-sub-primary-alpha);
+  color: var(--bili-sub-primary);
+}
+
+.bili-sub-bookmark-dialog__btn--record:hover:not(:disabled) {
+  background: rgba(0, 161, 214, 0.25);
+}
+
+.bili-sub-bookmark-dialog__btn--record:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.bili-sub-bookmark-dialog__record-status {
+  font-size: 11px;
+  color: var(--bili-sub-text-muted);
+}
+
+.bili-sub-bookmark-dialog__toast {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 8px 16px;
+  background: rgba(0, 0, 0, 0.85);
+  color: #fff;
+  font-size: 12px;
+  border-radius: 8px;
+  z-index: 100001;
+}
+.bili-sub-bookmark-dialog__toast-link {
+  color: #7dd3fc;
+  text-decoration: none;
+  margin: 0 2px;
+  cursor: pointer;
+}
+.bili-sub-bookmark-dialog__toast-link:hover {
+  text-decoration: underline;
+}
+
+.bili-sub-bookmark-dialog__clip-wrap {
+  padding: 0 0 8px;
+}
+.bili-sub-bookmark-dialog__clip-video {
+  width: 100%;
+  max-height: 180px;
+  border-radius: var(--bili-sub-radius-sm);
+  background: #000;
+  margin-top: 6px;
+}
+.bili-sub-bookmark-dialog__clip-empty {
+  font-size: 11px;
+  color: var(--bili-sub-text-muted);
+  padding: 8px 0;
+}
+
+/* BookmarkDialog 录制中界面 */
+.bili-sub-bookmark-dialog__recording {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 8px;
+  padding: 40px 16px;
+  color: #444;
+  font-size: 13px;
+}
+
+.bili-sub-bookmark-dialog__recording-text {
+  padding: 10px 14px;
+  border-radius: var(--bili-sub-radius-sm);
+  background: #f3f4f6;
+}
+.bili-sub-bookmark-dialog__recording-sentence {
+  font-size: 12px;
+  color: #666;
+  max-height: 3.2em;
+  overflow: hidden;
+}
+
+/* 收藏弹窗白底主题（Markdown 预览可读） */
+.bili-sub-bookmark-dialog__box--light {
+  background: #fff;
+  border-color: rgba(0, 0, 0, 0.08);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.12), 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+.bili-sub-bookmark-dialog__box--light .bili-sub-bookmark-dialog__title {
+  color: #1a1a1a;
+  background: #fff;
+  border-bottom-color: rgba(0, 0, 0, 0.08);
+}
+.bili-sub-bookmark-dialog__box--light .bili-sub-bookmark-dialog__scroll-body {
+  background: #fafafa;
+}
+.bili-sub-bookmark-dialog__box--light .bili-sub-bookmark-dialog__preview {
+  background: #fff;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+}
+.bili-sub-bookmark-dialog__box--light .bili-sub-bookmark-dialog__preview-target,
+.bili-sub-bookmark-dialog__box--light .bili-sub-bookmark-dialog__preview-native {
+  background: #fff;
+  color: #1a1a1a;
+  border-color: rgba(0, 0, 0, 0.12);
+}
+.bili-sub-bookmark-dialog__box--light .bili-sub-bookmark-dialog__preview-native {
+  color: #444;
+}
+.bili-sub-bookmark-dialog__box--light .bili-sub-bookmark-dialog__preview-time {
+  color: #666;
+}
+.bili-sub-bookmark-dialog__box--light .bili-sub-bookmark-dialog__label {
+  color: #333;
+}
+.bili-sub-bookmark-dialog__box--light .bili-sub-bookmark-dialog__tags-input {
+  background: #fff;
+  color: #1a1a1a;
+  border-color: rgba(0, 0, 0, 0.12);
+}
+.bili-sub-bookmark-dialog__box--light .bili-sub-bookmark-dialog__suggest {
+  background: #fff;
+  border-color: rgba(0, 0, 0, 0.12);
+}
+.bili-sub-bookmark-dialog__box--light .bili-sub-bookmark-dialog__suggest-item {
+  color: #1a1a1a;
+}
+.bili-sub-bookmark-dialog__box--light .bili-sub-bookmark-dialog__suggest-item:hover {
+  background: #f0f0f0;
+}
+.bili-sub-bookmark-dialog__box--light .bili-sub-bookmark-dialog__actions {
+  background: #fff;
+  border-top-color: rgba(0, 0, 0, 0.08);
+}
+.bili-sub-bookmark-dialog__box--light .bili-sub-bookmark-dialog__btn--secondary {
+  background: #eee;
+  color: #333;
+}
+.bili-sub-bookmark-dialog__box--light .bili-sub-bookmark-dialog__btn--secondary:hover {
+  background: #e0e0e0;
+}
+.bili-sub-bookmark-dialog__box--light .bili-sub-bookmark-dialog__record-status {
+  color: #666;
+}
+.bili-sub-bookmark-dialog__box--light .bili-sub-bookmark-dialog__clip-empty {
+  color: #666;
+}
+/* NoteEditor 在弹窗内白底预览 */
+.bili-sub-bookmark-dialog__box--light .bili-sub-note-editor__textarea {
+  background: #fff;
+  color: #1a1a1a;
+  border-color: rgba(0, 0, 0, 0.12);
+}
+.bili-sub-bookmark-dialog__box--light .bili-sub-note-editor__preview-wrap {
+  background: #fff;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: var(--bili-sub-radius-sm);
+  color: #1a1a1a;
+}
+.bili-sub-bookmark-dialog__box--light .bili-sub-note-editor__preview-label {
+  color: #555;
+}
+.bili-sub-bookmark-dialog__box--light .bili-sub-note-editor__preview h1,
+.bili-sub-bookmark-dialog__box--light .bili-sub-note-editor__preview h2,
+.bili-sub-bookmark-dialog__box--light .bili-sub-note-editor__preview h3 {
+  color: #1a1a1a;
+}
+.bili-sub-bookmark-dialog__box--light .bili-sub-note-editor__preview code {
+  background: #eee;
+  color: #333;
+}
+.bili-sub-bookmark-dialog__box--light .bili-sub-note-editor__img-placeholder {
+  color: #666;
 }

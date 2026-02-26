@@ -85,6 +85,23 @@
   line-height: 1.7;
 }
 
+.bili-sub-panel__bookmark-link-wrap {
+  padding: 4px 0;
+  flex-shrink: 0;
+}
+
+.bili-sub-panel__bookmark-link {
+  font-size: 12px;
+  color: var(--bili-sub-primary);
+  text-decoration: none;
+  cursor: pointer;
+  transition: color var(--bili-sub-transition);
+}
+
+.bili-sub-panel__bookmark-link:hover {
+  color: var(--bili-sub-primary-hover);
+}
+
 /* Settings overlay */
 .bili-sub-settings {
   position: absolute;

@@ -9,6 +9,7 @@ window.BiliSub.SubtitleItem = (function () {
 
   var PLAY_SVG = '<svg viewBox="0 0 24 24"><polygon points="6,4 20,12 6,20"/></svg>';
   var LOOP_SVG = '<svg viewBox="0 0 24 24"><path d="M17 1l4 4-4 4"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><path d="M7 23l-4-4 4-4"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>';
+  var BOOKMARK_SVG = '<svg viewBox="0 0 24 24"><path d="M17 3H7c-1.1 0-2 .9-2 2v16l7-3 7 3V5c0-1.1-.9-2-2-2z"/></svg>';
   var CHEVRON_SVG = '<svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>';
 
   function create(sentence, index, displayMode) {
@@ -29,12 +30,49 @@ window.BiliSub.SubtitleItem = (function () {
 
     var loopBtn = _createLoopBtn(sentence);
 
+    var bookmarkBtn = DOM.create('button', 'bili-sub-item__bookmark-btn', { innerHTML: BOOKMARK_SVG });
+    bookmarkBtn.title = '收藏此句';
+    bookmarkBtn.addEventListener('click', function (e) {
+      e.stopPropagation();
+      var BookmarkDialog = window.BiliSub.BookmarkDialog;
+      if (BookmarkDialog && typeof BookmarkDialog.open === 'function') {
+        var videoUrl = typeof location !== 'undefined' ? location.href : '';
+        var videoTitle = typeof document !== 'undefined' ? document.title : '';
+        BookmarkDialog.open({
+          type: 'sentence',
+          sentences: [sentence],
+          video: { url: videoUrl, title: videoTitle, from: sentence.from, to: sentence.to },
+        }, { anchor: bookmarkBtn });
+      }
+    });
+
     var timeEl = DOM.create('span', 'bili-sub-item__time', {
       textContent: Time.format(sentence.from),
     });
 
-    DOM.appendChildren(controls, playBtn, loopBtn, timeEl);
+    var progressWrap = DOM.create('div', 'bili-sub-item__progress-wrap');
+    progressWrap.title = '点击进度条跳转到该位置';
+    var progressTrack = DOM.create('div', 'bili-sub-item__progress-track');
+    var progressFill = DOM.create('div', 'bili-sub-item__progress-fill');
+    progressTrack.appendChild(progressFill);
+    progressWrap.appendChild(progressTrack);
+    progressWrap.addEventListener('click', function (e) {
+      e.stopPropagation();
+      var track = progressWrap.querySelector('.bili-sub-item__progress-track');
+      if (!track) return;
+      var rect = track.getBoundingClientRect();
+      var ratio = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+      var from = parseFloat(item.dataset.from);
+      var to = parseFloat(item.dataset.to);
+      var seekTime = from + ratio * (to - from);
+      if (window.BiliSub && window.BiliSub.PlayerService && typeof window.BiliSub.PlayerService.seekTo === 'function') {
+        window.BiliSub.PlayerService.seekTo(seekTime);
+      }
+    });
+
+    DOM.appendChildren(controls, playBtn, loopBtn, bookmarkBtn, timeEl);
     item.appendChild(controls);
+    item.appendChild(progressWrap);
 
     // Text content based on display mode
     _renderTextContent(item, sentence, displayMode);

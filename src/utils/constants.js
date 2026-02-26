@@ -11,6 +11,7 @@ window.BiliSub.Constants = {
     MODE_CHANGED: 'bili-sub-mode-changed',
     SETTINGS_CHANGED: 'bili-sub-settings-changed',
     REPEATER_STATE: 'bili-sub-repeater-state',
+    BOOKMARK_ADDED: 'bili-sub-bookmark-added',
   },
 
   DISPLAY_MODES: {
@@ -45,6 +46,15 @@ window.BiliSub.Constants = {
     PLAYBACK_SPEED: 'bili-sub-speed',
     DEFAULT_MODE_STRATEGY: 'bili-sub-default-mode-strategy',
     DEFAULT_MODE: 'bili-sub-default-mode',
+    SHORTCUT_ENABLED: 'bili-sub-shortcut-enabled',
+    BOOKMARKS: 'bili-sub-bookmarks',
+    BOOKMARK_TAGS: 'bili-sub-bookmark-tags',
+  },
+
+  INDEXEDDB: {
+    NAME: 'bili-sub-db',
+    CLIPS_STORE: 'bili-sub-clips',
+    NOTE_IMAGES_STORE: 'bili-sub-note-images',
   },
 
   DEFAULTS: {

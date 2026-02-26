@@ -1,11 +1,11 @@
 # Bilibili 字幕助手 — 代码索引
 
-> 最后更新：2026-02-25
-> 总行数：2364 行（22 个源文件）
+> 最后更新：2026-02-26
+> 总行数：约 4800+ 行（含收藏功能 + 自动录制切片）
 
 ## 项目概览
 
-Chrome Extension Manifest V3 插件，拦截 Bilibili 视频页面的 AI 字幕数据，提供双语对照、智能分句、循环复读、AB段重播等语言学习功能。纯 JavaScript，无框架无构建工具。
+Chrome Extension Manifest V3 插件，拦截 Bilibili 视频页面的 AI 字幕数据，提供双语对照、智能分句、循环复读、AB段重播、收藏（单句/AB 段、备注 Markdown+图片、标签、本地切片录制）等语言学习功能。纯 JavaScript，无框架无构建工具。
 
 ---
 
@@ -17,7 +17,9 @@ bilibili-subtitle-ext/
 ├── src/
 │   ├── inject.js                          (109行)   # 页面上下文脚本，拦截 fetch/XHR
 │   ├── background/
-│   │   └── service-worker.js               (11行)   # 后台 worker，处理图标点击
+│   │   ├── service-worker.js              (125行)   # 后台 worker，图标点击、收藏页、切片 IndexedDB 存取
+│   │   ├── offscreen.html                   (10行)   # Offscreen 文档（已弃用）
+│   │   └── offscreen-recorder.js            (85行)   # Tab 录制（已弃用，切片现由 content 直接录制）
 │   ├── utils/
 │   │   ├── constants.js                    (72行)   # 全局常量、事件名、选择器
 │   │   ├── time.js                         (20行)   # 时间格式化工具
@@ -29,20 +31,29 @@ bilibili-subtitle-ext/
 │   │   │   ├── repeater-service.js        (153行)   # 循环重播核心引擎
 │   │   │   ├── sentence-service.js        (160行)   # 字幕智能分句算法
 │   │   │   ├── subtitle-service.js        (165行)   # 字幕数据管理与双语合并
+│   │   │   ├── shortcut-service.js        (155行)   # 快捷键：左右切句、空格播放/暂停/单句循环
+│   │   │   ├── bookmark-service.js       (231行)   # 收藏 CRUD、标签、备注图片 IndexedDB
+│   │   │   ├── clip-service.js           (227行)   # 视频切片自动录制（ring buffer 20句）、通过 background 持久化
 │   │   │   └── auto-subtitle-service.js    (91行)   # 自动控制 B 站字幕菜单/双语开关
 │   │   ├── components/
+│   │   │   ├── NoteEditor.js              (126行)   # 备注 Markdown 编辑、粘贴图片、编辑/预览切换
+│   │   │   ├── BookmarkDialog.js         (455行)   # 收藏弹窗：双语预览、切片预览、备注、标签、录制切片
 │   │   │   ├── Header.js                   (50行)   # 面板头部栏
-│   │   │   ├── Settings.js                 (99行)   # 语言设置面板
+│   │   │   ├── Settings.js                (150行)   # 语言/快捷键/默认显示模式设置面板
 │   │   │   ├── ModeSelector.js             (79行)   # 显示模式切换（学习/双语/辅助）
-│   │   │   ├── ABRepeatBar.js             (166行)   # AB段重播控制栏
-│   │   │   ├── SubtitleItem.js            (144行)   # 单条字幕项（含播放/循环按钮）
+│   │   │   ├── ABRepeatBar.js             (180行)   # AB段重播控制栏（含收藏此 AB 段）
+│   │   │   ├── SubtitleItem.js            (164行)   # 单条字幕项（含播放/循环/收藏按钮）
 │   │   │   ├── SubtitleList.js             (98行)   # 字幕列表容器
 │   │   │   ├── SpeedControl.js             (77行)   # 播放速度控制
-│   │   │   └── Panel.js                   (194行)   # 主面板（组装所有组件）
+│   │   │   └── Panel.js                   (216行)   # 主面板（组装所有组件，触发自动录制）
 │   │   └── styles/
 │   │       ├── panel.css                  (148行)   # 面板、设置面板样式 + CSS变量
 │   │       ├── filter.css                  (92行)   # 模式选择器、速度控制样式
-│   │       └── subtitle.css               (379行)   # 字幕项、循环按钮、AB栏样式
+│   │       └── subtitle.css               (860行)   # 字幕项、循环按钮、AB栏、BookmarkDialog 切片预览样式
+│   ├── bookmarks/
+│   │   ├── bookmarks.html                  (45行)   # 收藏独立页
+│   │   ├── bookmarks.js                  (495行)   # 聚合、筛选、显示模式（双语/学习/辅助）、TTS、卡片渲染、切片预览、导出
+│   │   └── bookmarks.css                 (380行)   # 收藏页白+蓝主题、现代 card、操作在卡片右上角
 │   ├── options/
 │   │   ├── popup.html                      (90行)   # 浏览器工具栏图标点击时的设置弹窗
 │   │   └── popup.js                       (140行)   # 弹窗逻辑（语言设置、默认模式、授权码）
@@ -55,8 +66,8 @@ bilibili-subtitle-ext/
 ```
 CSS:  panel.css → filter.css → subtitle.css
 JS:   constants → time → dom
-    → player-service → repeater-service → sentence-service → subtitle-service → auto-subtitle-service
-    → SubtitleItem → SubtitleList → ABRepeatBar
+    → player-service → repeater-service → sentence-service → subtitle-service → shortcut-service → bookmark-service → clip-service → auto-subtitle-service
+    → SubtitleItem → SubtitleList → ABRepeatBar → NoteEditor → BookmarkDialog
     → Settings → ModeSelector → SpeedControl → Header → Panel
     → index.js（入口）
 ```
@@ -71,11 +82,12 @@ JS:   constants → time → dom
 - **模块名**: `window.BiliSub.Constants`（直接对象，非 IIFE）
 - **职责**: 集中管理所有常量
 - **关键内容**:
-  - `EVENTS` — 9 个自定义事件名（`SUBTITLE_DATA`, `SUBTITLE_URLS`, `SUBTITLE_UPDATED`, `LANGUAGE_CHANGED`, `SEEK_TO`, `PANEL_TOGGLE`, `MODE_CHANGED`, `SETTINGS_CHANGED`, `REPEATER_STATE`）
+  - `EVENTS` — 含 `BOOKMARK_ADDED` 等（见事件流）
   - `DISPLAY_MODES` — `bilingual` / `learning` / `assisted`
   - `SUPPORTED_LANGS` — `['zh', 'en', 'ja', 'es', 'ar', 'pt']`
   - `SELECTORS` — DOM 选择器（`VIDEO`, `PLAYER_CONTAINER`, `VIDEO_WRAPPER`）
-  - `STORAGE_KEYS` — chrome.storage 存储键（语言、显示模式、面板位置、播放速度、默认模式策略等）
+  - `STORAGE_KEYS` — chrome.storage 存储键（语言、显示模式、面板位置、播放速度、默认模式策略、默认模式、快捷键开关、`BOOKMARKS`、`BOOKMARK_TAGS` 等）
+  - `INDEXEDDB` — `NAME: 'bili-sub-db'`，`CLIPS_STORE`、`NOTE_IMAGES_STORE`
   - `DEFAULTS` — 默认配置（母语 zh、目标语 en、辅助模式、速度 1x）
   - `SENTENCE` — 分句算法参数（最大合并数 4、时间间隔阈值 1.5s 等）
   - `REPEATER` — 循环重播配置：`LOOP_OPTIONS: [Infinity, 5]`，`PAUSE_BETWEEN_LOOPS: 500`
@@ -139,6 +151,25 @@ JS:   constants → time → dom
   - `buildBilingualTimeline(targetBody, targetLang, nativeBody, nativeLang)` → 双语时间轴 `[{ from, to, target, native, segments }]`
 - **分句策略**: 根据终止标点、连接词、CJK 短片段、时间间隔等规则决定是否合并相邻条目，上限 4 条
 
+### services/bookmark-service.js
+- **模块名**: `window.BiliSub.BookmarkService`（IIFE）
+- **依赖**: Constants
+- **职责**: 收藏 CRUD、标签列表、导出 JSON、备注图片 IndexedDB（saveNoteImage/getNoteImage/deleteNoteImages）
+- **API**: `add(bookmark)`、`list()`、`get(id)`、`update(id, patch)`、`remove(id)`、`getAllTags()`、`exportBookmarks()`、`saveNoteImage(bookmarkId, index, blob)`、`getNoteImage(bookmarkId, index)`、`deleteNoteImages(bookmarkId)`、`getDb()`
+- **触发事件**: `BOOKMARK_ADDED`
+
+### services/clip-service.js
+- **模块名**: `window.BiliSub.ClipService`（IIFE）
+- **依赖**: PlayerService, SubtitleService
+- **职责**: 自动录制当前句（ring buffer 最近 20 句）、通过 background 持久化切片到扩展 origin IndexedDB
+- **API**:
+  - `startAutoRecord()` → 开始自动录制（监听 video timeupdate，按句录制）
+  - `stopAutoRecord()` → 停止自动录制
+  - `getAutoClip(from, to)` → Blob | null，从 ring buffer 获取
+  - `requestClip(fromSec, toSec)` → Promise\<{clipId, blob}\>，优先用 auto-clip，否则实时录制
+  - `persistClip(blob)` → Promise\<clipId\>，通过 background 保存到扩展 origin IndexedDB
+  - `deleteClip(clipId)` → Promise
+
 ### services/subtitle-service.js
 - **模块名**: `window.BiliSub.SubtitleService`（IIFE）
 - **依赖**: Constants, SentenceService
@@ -154,6 +185,17 @@ JS:   constants → time → dom
   - `getSettings()` → `{ nativeLang, targetLang }`
   - `onUpdate(callback)` → 注册数据更新监听
 - **监听事件**: `SUBTITLE_DATA`（添加数据）、`SUBTITLE_URLS`（自动拉取缺失语言）
+
+### services/shortcut-service.js
+- **模块名**: `window.BiliSub.ShortcutService`（IIFE）
+- **依赖**: Constants, SubtitleService, PlayerService, RepeaterService
+- **职责**: 仅在「快捷键模式」开启时监听键盘：左右切句（保持播放/暂停状态）、空格短按播放/暂停（连播到句末暂停）、空格长按单句循环
+- **行为**:
+  - 从 storage 读取 `SHORTCUT_ENABLED`，并监听 `SETTINGS_CHANGED`、`chrome.storage.onChanged` 更新开关
+  - Left/Right：定位到上一句/下一句开头，不改变播放状态（在播则继续播，暂停则停在句首）
+  - Space 短按（&lt;400ms）：非循环时播放/暂停，播放为「连播」——到句末自动暂停，再按从当前时间继续；循环中短按为句内暂停/继续
+  - Space 长按（≥400ms）：切换当前句单句循环（RepeaterService.play(..., Infinity) 或 stop）
+- **API**: `init()` → 注册 keydown/keyup 监听并订阅设置变更
 
 ### services/auto-subtitle-service.js
 - **模块名**: `window.BiliSub.AutoSubtitleService`（IIFE）
@@ -183,6 +225,20 @@ JS:   constants → time → dom
 
 ---
 
+### components/NoteEditor.js
+- **模块名**: `window.BiliSub.NoteEditor`（IIFE）
+- **依赖**: DOM
+- **职责**: 备注 Markdown 编辑、粘贴图片（data URL/asset 占位符）、编辑/预览切换
+- **API**: `create(options)` → `{ getElement, getValue, setValue, setGetAssetUrl, renderPreview }`；静态 `markdownToHtml(md, getAssetUrl)`、`escapeHtml(s)`
+
+### components/BookmarkDialog.js
+- **模块名**: `window.BiliSub.BookmarkDialog`（IIFE）
+- **依赖**: DOM, Time, BookmarkService, ClipService, NoteEditor
+- **职责**: 收藏弹窗（单句/AB 段）、双语预览、切片预览（自动关联 auto-clip）、NoteEditor、标签模糊匹配、录制切片
+- **定位逻辑**: 自动检测上下空间，底部不足时向上弹出
+- **备注图片**: 保存时将粘贴的图片 blob 转为 data URL 内联到 markdown，避免 IndexedDB 跨域问题
+- **API**: `open(data, options)`、`close()`
+
 ### components/Header.js
 - **模块名**: `window.BiliSub.Header`（IIFE）
 - **依赖**: DOM
@@ -210,8 +266,8 @@ JS:   constants → time → dom
 
 ### components/ABRepeatBar.js
 - **模块名**: `window.BiliSub.ABRepeatBar`（IIFE）
-- **依赖**: DOM, Time, Constants, RepeaterService
-- **职责**: AB段重播控制栏（选起点→选终点→自动循环→可取消）
+- **依赖**: DOM, Time, Constants, RepeaterService, SubtitleService, BookmarkDialog
+- **职责**: AB段重播控制栏（选起点→选终点→自动循环→可取消、收藏此 AB 段）
 - **四种状态**: `idle` → `selecting-a` → `selecting-b` → `playing`
 - **API**: `create()` → HTMLElement
 - **交互机制**:
@@ -224,8 +280,8 @@ JS:   constants → time → dom
 
 ### components/SubtitleItem.js
 - **模块名**: `window.BiliSub.SubtitleItem`（IIFE）
-- **依赖**: DOM, Time, Constants, RepeaterService
-- **职责**: 单条字幕渲染（播放按钮、循环按钮、文本内容）
+- **依赖**: DOM, Time, Constants, RepeaterService, BookmarkDialog
+- **职责**: 单条字幕渲染（播放、循环、收藏按钮、文本内容）
 - **API**: `create(sentence, index, displayMode)` → HTMLElement
 - **循环按钮三段式交互**:
   1. 点击 → 无限循环（∞）：`RepeaterService.play(from, to, Infinity)`
@@ -261,7 +317,7 @@ JS:   constants → time → dom
 - **依赖**: DOM, Constants, Header, Settings, ModeSelector, SubtitleList, ABRepeatBar, SpeedControl, SubtitleService, PlayerService
 - **职责**: 主面板，组装所有组件，管理拖拽/折叠/关闭/状态持久化
 - **API**: `create()` → HTMLElement（自动 append 到 body）, `show()`
-- **面板布局（从上到下）**: Header → Settings（overlay） → Body（ModeSelector → ABRepeatBar → SubtitleList → EmptyState → SpeedControl）
+- **面板布局（从上到下）**: Header → Settings（overlay） → Body（ModeSelector → 查看收藏链接 → ABRepeatBar → SubtitleList → EmptyState → SpeedControl）
 
 ---
 
@@ -270,7 +326,7 @@ JS:   constants → time → dom
 ### content/index.js
 - **职责**: Content script 入口，注入页面脚本 + 创建面板
 - **流程**: 注入 `inject.js` → `Panel.create()`
-- **监听**: chrome.runtime 消息 `toggle-panel` → Panel.show()
+- **监听**: chrome.runtime 消息 `toggle-panel` → Panel.show()；`clip-seek-play` → PlayerService.seekTo + video.play()
 
 ### inject.js（页面上下文）
 - **职责**: 拦截 fetch/XHR，捕获字幕数据和字幕 URL 列表
@@ -279,7 +335,7 @@ JS:   constants → time → dom
   - URL 匹配 `/x/player/(wbi/)?v2` → 提取字幕 URL 列表，派发 `bili-subtitle-urls` 事件
 
 ### background/service-worker.js
-- **职责**: 监听扩展图标点击，发送 `toggle-panel` 消息到当前 tab
+- **职责**: 扩展图标点击 → `toggle-panel`；`open-bookmarks-page` → 打开收藏页；`save-clip` → 将 dataUrl 转 Blob 存入扩展 origin IndexedDB 并返回 clipId；`delete-clip` → 删除切片
 
 ---
 
@@ -302,7 +358,12 @@ PlayerService
   └── startHighlightTracking ──→ SubtitleList.highlightCurrent()（每 200ms）
 
 chrome.runtime.onMessage
-  └── toggle-panel ──→ Panel.show()
+  ├── toggle-panel ──→ Panel.show()
+  ├── save-clip ──→ service-worker 存 Blob 到 IndexedDB，返回 clipId
+  └── delete-clip ──→ service-worker 从 IndexedDB 删除切片
+
+BookmarkService.add()
+  └── BOOKMARK_ADDED (window event)
 ```
 
 ---
@@ -334,7 +395,8 @@ chrome.runtime.onMessage
 |------|------|
 | `panel.css` | CSS 变量、面板容器、折叠/隐藏状态、空状态、设置覆盖层 |
 | `filter.css` | 模式选择器按钮组、速度控制栏 |
-| `subtitle.css` | 头部栏、字幕列表滚动、字幕项、播放/循环按钮、文本、展开翻译、AB 重播栏、AB 选择模式 |
+| `subtitle.css` | 头部栏、字幕列表、播放/循环/收藏按钮、NoteEditor、BookmarkDialog、AB 重播栏、AB 选择模式 |
+| `bookmarks.css` | 收藏独立页：筛选、列表、按句展开、备注预览 |
 
 ---
 
@@ -363,6 +425,21 @@ chrome.runtime.onMessage
 }
 ```
 
+### 收藏项（BookmarkService）
+```javascript
+{
+  id: string,
+  type: 'sentence' | 'segment',
+  sentences: [{ from, to, target, native }],
+  video: { url, title, from, to },
+  note: string,        // Markdown，含 ![](asset:N) 占位符
+  tags: string[],
+  clipId: string | null,
+  createdAt: number,
+}
+```
+备注图片存 IndexedDB `bili-sub-note-images`，key = `${bookmarkId}_${index}`；切片存 `bili-sub-clips`，key = clipId。
+
 ---
 
 ## chrome.storage 存储键
@@ -374,3 +451,8 @@ chrome.runtime.onMessage
 | `bili-sub-panel-pos` | {left, top} | 面板位置 |
 | `bili-sub-panel-collapsed` | boolean | 面板折叠状态 |
 | `bili-sub-speed` | number | 播放速度 |
+| `bili-sub-default-mode-strategy` | string | 默认显示模式策略：`last` 记住上次 / `fixed` 固定模式 |
+| `bili-sub-default-mode` | string | 固定时的默认模式：`bilingual` / `learning` / `assisted` |
+| `bili-sub-shortcut-enabled` | boolean | 是否开启快捷键模式（左右切句、空格播放/暂停/单句循环） |
+| `bili-sub-bookmarks` | array | 收藏列表 |
+| `bili-sub-bookmark-tags` | string[] | 去重后的标签列表（供模糊匹配） |

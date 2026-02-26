@@ -17,6 +17,7 @@ window.BiliSub.Panel = (function () {
   var _isDragging = false;
   var _dragOffset = { x: 0, y: 0 };
   var _emptyEl = null;
+  var _lastSentenceIndexForPause = -1;
 
   function _centerCurrentSentence() {
     try {
@@ -57,7 +58,12 @@ window.BiliSub.Panel = (function () {
         }
       },
       _handleCollapse,
-      _handleClose
+      _handleClose,
+      function () {
+        if (chrome.runtime && chrome.runtime.sendMessage) {
+          chrome.runtime.sendMessage({ action: 'open-bookmarks-page' });
+        }
+      }
     );
     _setupDrag(header);
 
@@ -71,6 +77,20 @@ window.BiliSub.Panel = (function () {
       SubtitleList.setDisplayMode(mode);
     });
 
+    var bookmarkLinkWrap = DOM.create('div', 'bili-sub-panel__bookmark-link-wrap');
+    var bookmarkLink = DOM.create('a', 'bili-sub-panel__bookmark-link', { textContent: '查看收藏' });
+    bookmarkLink.href = chrome.runtime.getURL('src/bookmarks/bookmarks.html');
+    bookmarkLink.target = '_blank';
+    bookmarkLink.addEventListener('click', function (e) {
+      e.preventDefault();
+      if (chrome.runtime && chrome.runtime.sendMessage) {
+        chrome.runtime.sendMessage({ action: 'open-bookmarks-page' });
+      } else {
+        window.open(bookmarkLink.href, '_blank');
+      }
+    });
+    bookmarkLinkWrap.appendChild(bookmarkLink);
+
     var abBarEl = ABRepeatBar.create();
 
     var listEl = SubtitleList.create();
@@ -82,7 +102,7 @@ window.BiliSub.Panel = (function () {
 
     var speedEl = SpeedControl.create();
 
-    DOM.appendChildren(body, modeEl, abBarEl, listEl, _emptyEl, speedEl);
+    DOM.appendChildren(body, modeEl, bookmarkLinkWrap, abBarEl, listEl, _emptyEl, speedEl);
     DOM.appendChildren(_panel, header, settingsEl, body);
 
     _loadState();
@@ -97,9 +117,24 @@ window.BiliSub.Panel = (function () {
       }
     });
 
-    // Highlight tracking
+    // Highlight tracking + 句末自动暂停
     PlayerService.startHighlightTracking(function (time) {
       SubtitleList.highlightCurrent(time);
+      try {
+        if (!SubtitleService || typeof SubtitleService.findCurrentIndex !== 'function') return;
+        var idx = SubtitleService.findCurrentIndex(time);
+        if (idx === -1) return;
+        var tl = SubtitleService.getTimeline();
+        if (!tl || !tl[idx]) return;
+        var sent = tl[idx];
+        if (time >= sent.to - 0.12 && time <= sent.to + 0.25) {
+          var v = PlayerService.getVideo && PlayerService.getVideo();
+          if (v && !v.paused) {
+            v.pause();
+          }
+        }
+        _lastSentenceIndexForPause = idx;
+      } catch (_) {}
     });
 
     document.body.appendChild(_panel);

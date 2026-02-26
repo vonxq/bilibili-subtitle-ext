@@ -77,26 +77,23 @@ window.BiliSub.RepeaterService = (function () {
 
     if (video.currentTime >= _state.sentenceTo) {
       _state.loopCount++;
-
       video.pause();
-      video.currentTime = _state.sentenceFrom;
 
       var reachedLimit =
         _state.loopTotal !== Infinity && _state.loopCount >= _state.loopTotal;
 
-      if (reachedLimit) {
+      if (reachedLimit || _state.loopTotal === 1) {
         stop();
         return;
       }
 
+      video.currentTime = _state.sentenceFrom;
       notify();
 
       setTimeout(function () {
         if (!_state.active) return;
         var v = getVideo();
-        if (v) {
-          v.play();
-        }
+        if (v) v.play();
       }, Constants.REPEATER.PAUSE_BETWEEN_LOOPS);
     }
   }
