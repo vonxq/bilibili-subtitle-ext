@@ -6,6 +6,7 @@ window.BiliSub.BookmarkDialog = (function () {
   var BookmarkService = window.BiliSub.BookmarkService;
   var ClipService = window.BiliSub.ClipService;
   var NoteEditor = window.BiliSub.NoteEditor;
+  var RepeaterService = window.BiliSub.RepeaterService;
 
   var _overlay = null;
   var _noteEditor = null;
@@ -134,6 +135,10 @@ window.BiliSub.BookmarkDialog = (function () {
 
   function open(data, options) {
     options = options || {};
+    if (RepeaterService && typeof RepeaterService.stop === 'function') {
+      // 停止所有循环与 AB 段播放，避免收藏时背景声音干扰
+      RepeaterService.stop();
+    }
     _pendingData = {
       type: data.type || 'sentence',
       sentences: data.sentences || [],

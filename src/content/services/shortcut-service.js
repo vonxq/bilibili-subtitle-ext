@@ -8,8 +8,11 @@ window.BiliSub.ShortcutService = (function () {
 
   var _enabled = false;
   var _spaceDownAt = 0;
-  var _normalPlayCheckTimer = null;
+  var _autoPauseTimerId = null;
+  var _autoWatcherId = null;
   var LONG_PRESS_MS = 400;
+  var AUTO_PAUSE_LEAD_MS = 100; // 句末前 100ms 自动暂停
+  var _autoPauseExpectedTime = 0;
 
   function _updateEnabled() {
     try {
@@ -48,32 +51,41 @@ window.BiliSub.ShortcutService = (function () {
     }
   }
 
-  function _startNormalPlayPauseAtEndCheck() {
-    if (_normalPlayCheckTimer) return;
-    _normalPlayCheckTimer = setInterval(function () {
-      var video = PlayerService && PlayerService.getVideo && PlayerService.getVideo();
-      if (!video || video.paused) return;
-      if (RepeaterService && RepeaterService.isActive && RepeaterService.isActive()) return;
-      var time = video.currentTime;
-      var timeline = _getTimeline();
-      for (var i = 0; i < timeline.length; i++) {
-        if (time >= timeline[i].from && time < timeline[i].to) {
-          if (time >= timeline[i].to - 0.2) {
-            video.pause();
-            clearInterval(_normalPlayCheckTimer);
-            _normalPlayCheckTimer = null;
-          }
-          return;
-        }
-      }
-    }, 100);
+  function _clearAutoPauseTimer() {
+    if (_autoPauseTimerId) {
+      clearInterval(_autoPauseTimerId);
+      _autoPauseTimerId = null;
+    }
+    _autoPauseExpectedTime = 0;
   }
 
-  function _stopNormalPlayCheck() {
-    if (_normalPlayCheckTimer) {
-      clearInterval(_normalPlayCheckTimer);
-      _normalPlayCheckTimer = null;
-    }
+  function _scheduleAutoPause(toTime) {
+    _clearAutoPauseTimer();
+
+    var video = PlayerService && PlayerService.getVideo && PlayerService.getVideo();
+    if (!video || video.paused) return;
+    if (RepeaterService && RepeaterService.isActive && RepeaterService.isActive()) return;
+
+    if (typeof toTime !== 'number' || isNaN(toTime)) return;
+    var endTime = toTime;
+
+    var targetTime = endTime - AUTO_PAUSE_LEAD_MS / 1000;
+    _autoPauseExpectedTime = targetTime;
+    _autoPauseTimerId = setInterval(function () {
+      var v = PlayerService && PlayerService.getVideo && PlayerService.getVideo();
+      if (!v || v.paused) { _clearAutoPauseTimer(); return; }
+      if (RepeaterService && RepeaterService.isActive && RepeaterService.isActive()) { _clearAutoPauseTimer(); return; }
+
+      var t = v.currentTime;
+      // 只要已经到达或超过预期停止时间，就立刻暂停并校正到预期时间
+      if (t >= _autoPauseExpectedTime) {
+        try {
+          v.pause();
+          v.currentTime = _autoPauseExpectedTime;
+        } catch (_) {}
+        _clearAutoPauseTimer();
+      }
+    }, 50);
   }
 
   function _onKeyDown(e) {
@@ -90,9 +102,13 @@ window.BiliSub.ShortcutService = (function () {
       e.preventDefault();
       e.stopPropagation();
       var idx = _getCurrentIndex();
-      if (idx <= 0) return;
+      var tl = _getTimeline();
+      if (idx <= 0 || !tl.length) return;
       var wasPlaying = PlayerService && PlayerService.getVideo && PlayerService.getVideo() && !PlayerService.getVideo().paused;
-      _seekToSentence(idx - 1, wasPlaying);
+      var targetIdx = idx - 1;
+      var targetSentence = tl[targetIdx];
+      _seekToSentence(targetIdx, wasPlaying);
+      if (wasPlaying && targetSentence) _scheduleAutoPause(targetSentence.to);
     }
     if (e.key === 'ArrowRight') {
       e.preventDefault();
@@ -101,7 +117,10 @@ window.BiliSub.ShortcutService = (function () {
       var timeline = _getTimeline();
       if (idx < 0 || idx >= timeline.length - 1) return;
       var wasPlaying = PlayerService && PlayerService.getVideo && PlayerService.getVideo() && !PlayerService.getVideo().paused;
-      _seekToSentence(idx + 1, wasPlaying);
+      var nextIdx = idx + 1;
+      var nextSentence = timeline[nextIdx];
+      _seekToSentence(nextIdx, wasPlaying);
+      if (wasPlaying && nextSentence) _scheduleAutoPause(nextSentence.to);
     }
   }
 
@@ -122,26 +141,33 @@ window.BiliSub.ShortcutService = (function () {
       var sentence = timeline[idx];
       if (RepeaterService && RepeaterService.isActive && RepeaterService.isActive()) {
         RepeaterService.stop();
-        _stopNormalPlayCheck();
+        _clearAutoPauseTimer();
       } else {
         RepeaterService.play(sentence.from, sentence.to, Infinity, 'sentence');
-        _stopNormalPlayCheck();
+        _clearAutoPauseTimer();
       }
       return;
     }
 
     if (RepeaterService && RepeaterService.isActive && RepeaterService.isActive()) {
+      _clearAutoPauseTimer();
       if (video.paused) video.play();
       else video.pause();
       return;
     }
 
     if (video.paused) {
+      var tl2 = _getTimeline();
+      var idx2 = _getCurrentIndex();
+      var endTime2 = null;
+      if (tl2.length && idx2 >= 0 && idx2 < tl2.length) {
+        endTime2 = tl2[idx2].to;
+      }
       video.play();
-      _startNormalPlayPauseAtEndCheck();
+      _scheduleAutoPause(endTime2);
     } else {
       video.pause();
-      _stopNormalPlayCheck();
+      _clearAutoPauseTimer();
     }
   }
 
@@ -150,6 +176,18 @@ window.BiliSub.ShortcutService = (function () {
     document.addEventListener('keydown', _onKeyDown, true);
     document.addEventListener('keyup', _onKeyUp, true);
     window.addEventListener(Constants.EVENTS.SETTINGS_CHANGED, _updateEnabled);
+    // 当视频已经在播放且用户尚未使用快捷键时，也自动为当前句设置一次暂停点
+    if (!_autoWatcherId) {
+      _autoWatcherId = setInterval(function () {
+        if (!_enabled || _autoPauseTimerId) return;
+        var v = PlayerService && PlayerService.getVideo && PlayerService.getVideo();
+        if (!v || v.paused) return;
+        var tl = _getTimeline();
+        var idx = _getCurrentIndex();
+        if (!tl.length || idx < 0 || idx >= tl.length) return;
+        _scheduleAutoPause(tl[idx].to);
+      }, 500);
+    }
     if (chrome.storage && chrome.storage.onChanged) {
       chrome.storage.onChanged.addListener(function (changes, area) {
         if (area === 'local' && changes[Constants.STORAGE_KEYS.SHORTCUT_ENABLED]) _updateEnabled();

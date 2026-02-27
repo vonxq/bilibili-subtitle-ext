@@ -17,7 +17,6 @@ window.BiliSub.Panel = (function () {
   var _isDragging = false;
   var _dragOffset = { x: 0, y: 0 };
   var _emptyEl = null;
-  var _lastSentenceIndexForPause = -1;
 
   function _centerCurrentSentence() {
     try {
@@ -117,23 +116,10 @@ window.BiliSub.Panel = (function () {
       }
     });
 
-    // Highlight tracking + 句末自动暂停
+    // Highlight tracking
     PlayerService.startHighlightTracking(function (time) {
-      SubtitleList.highlightCurrent(time);
       try {
-        if (!SubtitleService || typeof SubtitleService.findCurrentIndex !== 'function') return;
-        var idx = SubtitleService.findCurrentIndex(time);
-        if (idx === -1) return;
-        var tl = SubtitleService.getTimeline();
-        if (!tl || !tl[idx]) return;
-        var sent = tl[idx];
-        if (time >= sent.to - 0.12 && time <= sent.to + 0.25) {
-          var v = PlayerService.getVideo && PlayerService.getVideo();
-          if (v && !v.paused) {
-            v.pause();
-          }
-        }
-        _lastSentenceIndexForPause = idx;
+        SubtitleList.highlightCurrent(time);
       } catch (_) {}
     });
 

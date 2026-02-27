@@ -1,6 +1,6 @@
 # Bilibili 字幕助手 — 代码索引
 
-> 最后更新：2026-02-26
+> 最后更新：2026-02-27
 > 总行数：约 4800+ 行（含收藏功能 + 自动录制切片）
 
 ## 项目概览
@@ -31,13 +31,13 @@ bilibili-subtitle-ext/
 │   │   │   ├── repeater-service.js        (153行)   # 循环重播核心引擎
 │   │   │   ├── sentence-service.js        (160行)   # 字幕智能分句算法
 │   │   │   ├── subtitle-service.js        (165行)   # 字幕数据管理与双语合并
-│   │   │   ├── shortcut-service.js        (155行)   # 快捷键：左右切句、空格播放/暂停/单句循环
+│   │   │   ├── shortcut-service.js        (199行)   # 快捷键：左右切句、空格播放/暂停/单句循环
 │   │   │   ├── bookmark-service.js       (231行)   # 收藏 CRUD、标签、备注图片 IndexedDB
-│   │   │   ├── clip-service.js           (227行)   # 视频切片自动录制（ring buffer 20句）、通过 background 持久化
+│   │   │   ├── clip-service.js           (249行)   # 视频切片自动录制（ring buffer 20句）、通过 background 持久化
 │   │   │   └── auto-subtitle-service.js    (91行)   # 自动控制 B 站字幕菜单/双语开关
 │   │   ├── components/
 │   │   │   ├── NoteEditor.js              (126行)   # 备注 Markdown 编辑、粘贴图片、编辑/预览切换
-│   │   │   ├── BookmarkDialog.js         (455行)   # 收藏弹窗：双语预览、切片预览、备注、标签、录制切片
+│   │   │   ├── BookmarkDialog.js         (508行)   # 收藏弹窗：双语预览、切片预览、备注、标签、录制切片
 │   │   │   ├── Header.js                   (50行)   # 面板头部栏
 │   │   │   ├── Settings.js                (150行)   # 语言/快捷键/默认显示模式设置面板
 │   │   │   ├── ModeSelector.js             (79行)   # 显示模式切换（学习/双语/辅助）
@@ -45,7 +45,7 @@ bilibili-subtitle-ext/
 │   │   │   ├── SubtitleItem.js            (164行)   # 单条字幕项（含播放/循环/收藏按钮）
 │   │   │   ├── SubtitleList.js             (98行)   # 字幕列表容器
 │   │   │   ├── SpeedControl.js             (77行)   # 播放速度控制
-│   │   │   └── Panel.js                   (216行)   # 主面板（组装所有组件，触发自动录制）
+│   │   │   └── Panel.js                   (215行)   # 主面板（组装所有组件，触发自动录制）
 │   │   └── styles/
 │   │       ├── panel.css                  (148行)   # 面板、设置面板样式 + CSS变量
 │   │       ├── filter.css                  (92行)   # 模式选择器、速度控制样式
@@ -163,12 +163,13 @@ JS:   constants → time → dom
 - **依赖**: PlayerService, SubtitleService
 - **职责**: 自动录制当前句（ring buffer 最近 20 句）、通过 background 持久化切片到扩展 origin IndexedDB
 - **API**:
-  - `startAutoRecord()` → 开始自动录制（监听 video timeupdate，按句录制）
-  - `stopAutoRecord()` → 停止自动录制
-  - `getAutoClip(from, to)` → Blob | null，从 ring buffer 获取
-  - `requestClip(fromSec, toSec)` → Promise\<{clipId, blob}\>，优先用 auto-clip，否则实时录制
+  - `startAutoRecord()` → 开始自动录制（监听 video timeupdate，按句录制到内存 ring buffer）
+  - `stopAutoRecord()` → 停止自动录制并停止当前自动录制的 MediaRecorder
+  - `getAutoClip(from, to)` → Blob | null，从 ring buffer 获取单句切片
+  - `requestClip(fromSec, toSec)` → Promise\<{clipId, blob}\>，始终按需录制一段新切片（不再依赖自动缓存），录制结束后立即持久化
+  - `recordFreshClip(fromSec, toSec)` → Promise\<{clipId, blob}\>，与 `requestClip` 相同策略，但显式用于“立即重新录制”场景
   - `persistClip(blob)` → Promise\<clipId\>，通过 background 保存到扩展 origin IndexedDB
-  - `deleteClip(clipId)` → Promise
+  - `deleteClip(clipId)` → Promise，删除已保存切片
 
 ### services/subtitle-service.js
 - **模块名**: `window.BiliSub.SubtitleService`（IIFE）

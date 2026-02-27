@@ -182,10 +182,21 @@ window.BiliSub.ClipService = (function () {
       try {
         rec = _createRecorder(stream);
       } catch (err2) {
+        stream.getTracks().forEach(function (track) {
+          try { track.stop(); } catch (_) {}
+        });
         reject(new Error('无法创建录制器')); return;
       }
       var chunks = [];
       var recordedBlob = null;
+
+      function cleanupStream() {
+        if (!stream) return;
+        stream.getTracks().forEach(function (track) {
+          try { track.stop(); } catch (_) {}
+        });
+        stream = null;
+      }
 
       rec.ondataavailable = function (e) {
         if (e.data && e.data.size > 0) chunks.push(e.data);
@@ -194,9 +205,14 @@ window.BiliSub.ClipService = (function () {
         recordedBlob = new Blob(chunks, { type: 'video/webm' });
         persistClip(recordedBlob).then(function (clipId) {
           resolve({ clipId: clipId, blob: recordedBlob });
-        }).catch(reject);
+        }).catch(reject).finally(function () {
+          cleanupStream();
+        });
       };
-      rec.onerror = function () { reject(new Error('录制出错')); };
+      rec.onerror = function () {
+        cleanupStream();
+        reject(new Error('录制出错'));
+      };
 
       el.currentTime = fromSec;
       function onSeeked() {
